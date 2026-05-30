@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Tender Validation Gallery — tenders.procurement.gov.ge</title>
+<style>
+  body{font:14px/1.5 system-ui,Segoe UI,sans-serif;margin:0;background:#f4f5f7;color:#1a1a1a}
+  header{background:#0b5; background:linear-gradient(90deg,#0a5,#078);color:#fff;padding:20px 28px}
+  header h1{margin:0 0 6px;font-size:20px} header p{margin:2px 0;opacity:.95}
+  main{max-width:1100px;margin:18px auto;padding:0 16px}
+  .card{background:#fff;border:1px solid #dde;border-radius:10px;padding:16px 18px;margin:0 0 18px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .card h2{margin:0 0 4px;font-size:17px} .aid{color:#789;font-weight:400;font-size:13px}
+  .meta,.facts{color:#334;font-size:13px;margin:4px 0} .facts code{background:#eef;padding:1px 5px;border-radius:4px}
+  .badges{margin:8px 0}
+  .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:12px;margin:2px 4px 2px 0;color:#fff}
+  .badge.ok{background:#2a9d3a} .badge.bad{background:#c0392b} .badge.era{background:#d68910}
+  .notes{color:#a15;font-size:13px;margin:6px 0 0 18px}
+  .shots{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  .shots img{width:100%;border:1px solid #ccd;border-radius:6px}
+  figcaption{font-size:12px;color:#567;margin-bottom:4px}
+  a{color:#067}
+</style></head>
+<body>
+<header>
+  <h1>Tender Validation Gallery</h1>
+  <p>16/16 tenders pass every documented rule (layout · file mode · stat-icon=status · contract-tab).
+     Visual + HTML + Python cross-checked. Generated from <code>docs/gallery/validation_results.json</code>.</p>
+  <p>Type → layout observed: <b>NAT→sectioned</b>.
+     Era note: NAT sectioned confirmed back to 2018; older tenders (e.g. 2014 SPA) are flat.</p>
+  <p><b>Lifecycle coverage (state-dependent tabs):</b> status 10 <i>გამოცხადებულია</i> (4 tabs, no contract)
+     → 130 <i>მიმდინარეობს ხელშეკრულების მომზადება</i> (4 tabs, no contract)
+     → 140 <i>ხელშეკრულება დადებულია</i> (5 tabs, <code>agr_docs</code> appears). Confirms: the contract tab
+     shows up only once a contract is <b>signed</b>, not while it is being prepared.</p>
+</header>
+<main>
+
+  <section class="card">
+    <h2>NAT260011223 <span class="aid">app_id 688150</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 29.05.2026 13:43 &nbsp;|&nbsp;
+      <b>Status:</b> გამოცხადებულია (stat10) &nbsp;|&nbsp;
+      <b>Tabs:</b> 4 app_main, app_docs, app_bids, agency_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=688150&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      8 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 0 files (mode []).
+      &nbsp; <b>Bids:</b> empty/other.
+      
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/688150_main.png" target="_blank"><img src="gallery/688150_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/688150_docs.png" target="_blank"><img src="gallery/688150_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT260011222 <span class="aid">app_id 688168</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 29.05.2026 13:42 &nbsp;|&nbsp;
+      <b>Status:</b> გამოცხადებულია (stat10) &nbsp;|&nbsp;
+      <b>Tabs:</b> 4 app_main, app_docs, app_bids, agency_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=688168&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      7 files, 2 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 0 files (mode []).
+      &nbsp; <b>Bids:</b> empty/other.
+      
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/688168_main.png" target="_blank"><img src="gallery/688168_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/688168_docs.png" target="_blank"><img src="gallery/688168_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT260011224 <span class="aid">app_id 688985</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 29.05.2026 14:05 &nbsp;|&nbsp;
+      <b>Status:</b> გამოცხადებულია (stat10) &nbsp;|&nbsp;
+      <b>Tabs:</b> 4 app_main, app_docs, app_bids, agency_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=688985&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      3 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 0 files (mode []).
+      &nbsp; <b>Bids:</b> empty/other.
+      
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/688985_main.png" target="_blank"><img src="gallery/688985_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/688985_docs.png" target="_blank"><img src="gallery/688985_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT260010476 <span class="aid">app_id 686258</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 19.05.2026 18:10 &nbsp;|&nbsp;
+      <b>Status:</b> მიმდინარეობს ხელშეკრულების მომზადება (stat130) &nbsp;|&nbsp;
+      <b>Tabs:</b> 4 app_main, app_docs, app_bids, agency_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=686258&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      4 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 1 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(1).
+      
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/686258_main.png" target="_blank"><img src="gallery/686258_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/686258_docs.png" target="_blank"><img src="gallery/686258_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT260010453 <span class="aid">app_id 687576</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 19.05.2026 17:13 &nbsp;|&nbsp;
+      <b>Status:</b> მიმდინარეობს ხელშეკრულების მომზადება (stat130) &nbsp;|&nbsp;
+      <b>Tabs:</b> 4 app_main, app_docs, app_bids, agency_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=687576&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      3 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 3 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(1).
+      
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/687576_main.png" target="_blank"><img src="gallery/687576_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/687576_docs.png" target="_blank"><img src="gallery/687576_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT260010433 <span class="aid">app_id 687581</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 19.05.2026 16:28 &nbsp;|&nbsp;
+      <b>Status:</b> მიმდინარეობს ხელშეკრულების მომზადება (stat130) &nbsp;|&nbsp;
+      <b>Tabs:</b> 4 app_main, app_docs, app_bids, agency_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=687581&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      4 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 3 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(1).
+      
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/687581_main.png" target="_blank"><img src="gallery/687581_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/687581_docs.png" target="_blank"><img src="gallery/687581_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT180011996 <span class="aid">app_id 274057</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 01.08.2018 17:48 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=274057&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      16 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 19 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(2).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/274057_main.png" target="_blank"><img src="gallery/274057_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/274057_docs.png" target="_blank"><img src="gallery/274057_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT190007719 <span class="aid">app_id 302010</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 16.04.2019 15:20 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=302010&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      6 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 45 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(3).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/302010_main.png" target="_blank"><img src="gallery/302010_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/302010_docs.png" target="_blank"><img src="gallery/302010_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT210006831 <span class="aid">app_id 399052</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 14.04.2021 18:12 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=399052&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      4 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 15 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(2).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/399052_main.png" target="_blank"><img src="gallery/399052_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/399052_docs.png" target="_blank"><img src="gallery/399052_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT210012962 <span class="aid">app_id 409776</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 15.07.2021 16:07 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=409776&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      8 files, 3 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 29 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(2).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/409776_main.png" target="_blank"><img src="gallery/409776_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/409776_docs.png" target="_blank"><img src="gallery/409776_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT220012019 <span class="aid">app_id 464772</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 21.06.2022 17:12 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=464772&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      6 files, 2 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 9 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(2).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/464772_main.png" target="_blank"><img src="gallery/464772_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/464772_docs.png" target="_blank"><img src="gallery/464772_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT240010275 <span class="aid">app_id 577557</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 23.05.2024 17:59 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=577557&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      6 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 10 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(1).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/577557_main.png" target="_blank"><img src="gallery/577557_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/577557_docs.png" target="_blank"><img src="gallery/577557_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT240019557 <span class="aid">app_id 596328</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 01.10.2024 10:21 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=596328&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      11 files, 4 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 16 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(1).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/596328_main.png" target="_blank"><img src="gallery/596328_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/596328_docs.png" target="_blank"><img src="gallery/596328_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT240024343 <span class="aid">app_id 604900</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 05.12.2024 21:44 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=604900&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      16 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 111 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(5).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/604900_main.png" target="_blank"><img src="gallery/604900_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/604900_docs.png" target="_blank"><img src="gallery/604900_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT250013859 <span class="aid">app_id 642243</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 01.08.2025 17:39 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=642243&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      6 files, 1 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 13 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(3).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/642243_main.png" target="_blank"><img src="gallery/642243_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/642243_docs.png" target="_blank"><img src="gallery/642243_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>NAT260005813 <span class="aid">app_id 678297</span></h2>
+    <div class="meta">
+      <b>Type:</b> NAT &nbsp;|&nbsp;
+      <b>Registered:</b> 23.03.2026 17:45 &nbsp;|&nbsp;
+      <b>Status:</b> ხელშეკრულება დადებულია (stat140) &nbsp;|&nbsp;
+      <b>Tabs:</b> 5 app_main, app_docs, app_bids, agency_docs, agr_docs
+      &nbsp;|&nbsp; <a href="https://tenders.procurement.gov.ge/public/?go=678297&lang=ge" target="_blank">open live ↗</a>
+    </div>
+    <div class="badges"><span class="badge ok" title="PASS">docs_layout: PASS</span><span class="badge ok" title="PASS">docs_mode: PASS</span><span class="badge ok" title="PASS">stat_icon: PASS</span><span class="badge ok" title="PASS">contract_tab: PASS</span></div>
+    <div class="facts">
+      <b>app_docs:</b> predicted <code>sectioned</code> → actual <code>sectioned</code>,
+      10 files, 3 cost-estimate file(s), modes ['que'].<br>
+      <b>Proves:</b> Sectioned layout (mode=que); cost estimate in section 1.3 (#que150).<br>
+      <b>Results (agency_docs):</b> 26 files (mode ['app']).
+      &nbsp; <b>Bids:</b> bidders(2).
+      &nbsp; <b>Contract:</b> payments=True, file mode=contract
+    </div>
+    
+    <div class="shots">
+      <figure><figcaption>Main tab</figcaption><a href="gallery/678297_main.png" target="_blank"><img src="gallery/678297_main.png" loading="lazy"></a></figure>
+      <figure><figcaption>Documentation tab (proof of layout)</figcaption><a href="gallery/678297_docs.png" target="_blank"><img src="gallery/678297_docs.png" loading="lazy"></a></figure>
+    </div>
+  </section>
+</main>
+</body></html>

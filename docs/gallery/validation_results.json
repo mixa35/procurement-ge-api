@@ -1,0 +1,686 @@
+[
+  {
+    "app_id": 577557,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT240010275",
+    "type_prefix": "NAT",
+    "reg_date": "23.05.2024 17:59",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 6,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 10,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(1)"
+  },
+  {
+    "app_id": 596328,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT240019557",
+    "type_prefix": "NAT",
+    "reg_date": "01.10.2024 10:21",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 11,
+      "cost_est": 4,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 16,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(1)"
+  },
+  {
+    "app_id": 399052,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT210006831",
+    "type_prefix": "NAT",
+    "reg_date": "14.04.2021 18:12",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT) პრეისკურანტით",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 4,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 15,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(2)"
+  },
+  {
+    "app_id": 302010,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT190007719",
+    "type_prefix": "NAT",
+    "reg_date": "16.04.2019 15:20",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 6,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 45,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(3)"
+  },
+  {
+    "app_id": 274057,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT180011996",
+    "type_prefix": "NAT",
+    "reg_date": "01.08.2018 17:48",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 16,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 19,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(2)"
+  },
+  {
+    "app_id": 678297,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT260005813",
+    "type_prefix": "NAT",
+    "reg_date": "23.03.2026 17:45",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 10,
+      "cost_est": 3,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 26,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(2)"
+  },
+  {
+    "app_id": 604900,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT240024343",
+    "type_prefix": "NAT",
+    "reg_date": "05.12.2024 21:44",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 16,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 111,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(5)"
+  },
+  {
+    "app_id": 642243,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT250013859",
+    "type_prefix": "NAT",
+    "reg_date": "01.08.2025 17:39",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 6,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 13,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(3)"
+  },
+  {
+    "app_id": 409776,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT210012962",
+    "type_prefix": "NAT",
+    "reg_date": "15.07.2021 16:07",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 8,
+      "cost_est": 3,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 29,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(2)"
+  },
+  {
+    "app_id": 464772,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs",
+      "agr_docs"
+    ],
+    "has_contract_tab": true,
+    "nat_code": "NAT220012019",
+    "type_prefix": "NAT",
+    "reg_date": "21.06.2022 17:12",
+    "status_label": "ხელშეკრულება დადებულია",
+    "stat_icon": 140,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 6,
+      "cost_est": 2,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 9,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "agr_docs": {
+      "has_payments": true,
+      "contract_file_mode": "contract"
+    },
+    "bids_state": "bidders(2)"
+  },
+  {
+    "app_id": 686258,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs"
+    ],
+    "has_contract_tab": false,
+    "nat_code": "NAT260010476",
+    "type_prefix": "NAT",
+    "reg_date": "19.05.2026 18:10",
+    "status_label": "მიმდინარეობს ხელშეკრულების მომზადება",
+    "stat_icon": 130,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 4,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 1,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "bids_state": "bidders(1)"
+  },
+  {
+    "app_id": 687576,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs"
+    ],
+    "has_contract_tab": false,
+    "nat_code": "NAT260010453",
+    "type_prefix": "NAT",
+    "reg_date": "19.05.2026 17:13",
+    "status_label": "მიმდინარეობს ხელშეკრულების მომზადება",
+    "stat_icon": 130,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 3,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 3,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "bids_state": "bidders(1)"
+  },
+  {
+    "app_id": 687581,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs"
+    ],
+    "has_contract_tab": false,
+    "nat_code": "NAT260010433",
+    "type_prefix": "NAT",
+    "reg_date": "19.05.2026 16:28",
+    "status_label": "მიმდინარეობს ხელშეკრულების მომზადება",
+    "stat_icon": 130,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 4,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 3,
+      "empty": false,
+      "modes": [
+        "app"
+      ]
+    },
+    "bids_state": "bidders(1)"
+  },
+  {
+    "app_id": 688985,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs"
+    ],
+    "has_contract_tab": false,
+    "nat_code": "NAT260011224",
+    "type_prefix": "NAT",
+    "reg_date": "29.05.2026 14:05",
+    "status_label": "გამოცხადებულია",
+    "stat_icon": 10,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT) პრეისკურანტით",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 3,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 0,
+      "empty": true,
+      "modes": []
+    },
+    "bids_state": "empty/other"
+  },
+  {
+    "app_id": 688150,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs"
+    ],
+    "has_contract_tab": false,
+    "nat_code": "NAT260011223",
+    "type_prefix": "NAT",
+    "reg_date": "29.05.2026 13:43",
+    "status_label": "გამოცხადებულია",
+    "stat_icon": 10,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 8,
+      "cost_est": 1,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 0,
+      "empty": true,
+      "modes": []
+    },
+    "bids_state": "empty/other"
+  },
+  {
+    "app_id": 688168,
+    "checks": {
+      "docs_layout": "PASS",
+      "docs_mode": "PASS",
+      "stat_icon": "PASS",
+      "contract_tab": "PASS"
+    },
+    "notes": [],
+    "tabs": [
+      "app_main",
+      "app_docs",
+      "app_bids",
+      "agency_docs"
+    ],
+    "has_contract_tab": false,
+    "nat_code": "NAT260011222",
+    "type_prefix": "NAT",
+    "reg_date": "29.05.2026 13:42",
+    "status_label": "გამოცხადებულია",
+    "stat_icon": 10,
+    "type_label": "ელექტრონული ტენდერი აუქციონის გარეშე(NAT)",
+    "app_docs": {
+      "predicted": "sectioned",
+      "actual": "sectioned",
+      "files": 7,
+      "cost_est": 2,
+      "modes": [
+        "que"
+      ]
+    },
+    "agency_docs": {
+      "files": 0,
+      "empty": true,
+      "modes": []
+    },
+    "bids_state": "empty/other"
+  }
+]

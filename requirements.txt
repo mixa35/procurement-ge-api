@@ -1,0 +1,14 @@
+# The CLIENT (tenders_client) needs only the first three packages.
+# Prefer `pip install .` (see pyproject.toml) for client-only use.
+# The rest are for the provenance/discovery capture scripts, not the client.
+
+# --- client runtime ---
+requests
+beautifulsoup4
+lxml
+
+# --- provenance/discovery scripts only ---
+playwright
+duckdb
+python-dotenv
+openpyxl

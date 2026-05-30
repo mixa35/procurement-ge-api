@@ -1,0 +1,78 @@
+<div id="app_bids">
+
+	
+
+	<p align="right">
+		<button type="button" id="refrsh">გვერდის განახლება</button>
+		<button type="button" id="showtdocs">ტექნიკური დოკუმენტაცია</button>
+	</p>
+
+	<div id="app_tdocs" style="margin-top:3em;"></div>
+	
+	
+	
+	
+
+	<table width="100%" border="0" cellspacing="1" cellpadding="6" class="ktable" style="margin-bottom:2em">
+		<thead>
+			<tr class="ui-widget-header">
+				<td>პრეტენდენტი</td>
+				<td>ბოლო შეთავაზება<br />თანხა/დრო</td>
+				<td>პირველი შეთავაზება<br />თანხა/დრო</td>
+				<td align="center">შეთავაზებები</td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr bgcolor="#ffffff" id="B656756759455">
+				<td class="activebid1">
+					<a href="#" onclick="ShowProfile(32327)"><img src="images/profile24.png"></a>
+					
+					<span class="color-1">შპს სამება</span>
+				</td>
+				<td class="activebid1"><strong>130`439.00</strong>&nbsp;<br /><span class="date">04.12.2025 14:28</span></td>
+				<td class="activebid1">130`439.00&nbsp;<br /><span class="date">04.12.2025 14:28</span></td>
+				<td align="center" class="activebid1">[1] &nbsp;<a href="javascript:void(0)" onclick="ShowBidHistory(656756,759455)">ნახვა</a> </td>
+
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+
+<script type="text/javascript">
+	$(document).ready(function () {
+		$('#refrsh').button({
+			icons: {
+				primary: "ui-icon-refresh"
+			}
+		}).click(function () {
+			ShowApp(656756, '', 2)
+		});
+		$('#showtdocs').button({
+			icons: {
+				primary: "ui-icon-triangle-1-s"
+			}
+		}).click(function () {
+			$.get('library/controller.php', {
+				action: 'app_tdocs',
+				app_id: 656756
+			}, function (data) {
+				$('#app_tdocs').html(data);
+			});
+		})
+	});
+
+	function ShowBidHistory(bid, app) {
+		var targetelm = 'B' + bid + app;
+		var targetcontainer = targetelm + 'C';
+		$('#' + targetcontainer).parent().remove();
+		$('#' + targetelm).after('<tr><td colspan="5" id="' + targetcontainer + '"></td></tr>');
+		$.get('library/controller.php', {
+			action: 'view_bid',
+			app_id: bid,
+			bid_id: app
+		}, function (data) {
+			$('#' + targetcontainer).html(data);
+		});
+	}
+</script>

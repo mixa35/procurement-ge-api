@@ -1,0 +1,30 @@
+# --- Secrets & local config (must NEVER be committed) ---
+.env
+.env.*
+!.env.example
+
+# --- Live-scraped data & browser artifacts (do not redistribute) ---
+data/
+*.duckdb
+.playwright-mcp/
+
+# --- graphify generated explore layer (regenerate with /graphify; can go stale) ---
+graphify-out/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

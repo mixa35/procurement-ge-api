@@ -1,0 +1,555 @@
+# Machine-readable inventory of every reverse-engineered endpoint under the
+# შესყიდვები (Procurement) section of tenders.procurement.gov.ge.
+#
+# This file is the source of truth the Python client (tenders_client/) is checked
+# against. Human-readable prose lives in api_reference.md; raw HTML examples in
+# html_structure.md. Keep all three in sync.
+#
+# status values:
+#   documented        — all 7 definition-of-done criteria captured & verified
+#   needs_reverify    — documented previously, not re-confirmed this pass
+#   in_progress       — actively being discovered
+#   not_discovered    — known to exist, action/params unknown
+#
+# Each endpoint's definition of done (must all be true before status: documented):
+#   method+url, every param, response shape, empty state, error state,
+#   auth requirement, captured fixture path.
+#
+# NOTE ON `fixture:` PATHS — the data/discovery/*.html paths below name where each
+# response was captured during the original discovery run. That bulk HTML is NOT
+# shipped in this bundle (we don't redistribute scraped pages). A curated subset
+# backing the test suite lives in tests/fixtures/, and the capture scripts that
+# produced them are in provenance/discovery/. Regenerate any fixture by re-running
+# the matching provenance/discovery/ script against the live portal.
+
+meta:
+  base_url: https://tenders.procurement.gov.ge/public/library/controller.php
+  session:
+    cookie: SPALITE
+    acquire: GET https://tenders.procurement.gov.ge/public/?lang=ge
+    note: Reuse the SPALITE cookie on all controller.php calls. Missing cookie -> PHP error.
+  encoding: utf-8
+  thousands_separator: "`"   # backtick, e.g. 7`500.00 ლარი
+  throttle_seconds: 1.5
+  auth: public   # all endpoints below confirmed reachable anonymously
+
+endpoints:
+
+  - id: company_lookup
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/list_org.php
+    action: null
+    params:
+      - {name: q,       required: true, default: null, values: "reg code OR name substring (min 3 chars)", note: matches reg code or org name}
+      - {name: orgtype, required: true, default: "1",  values: "0,1,2,3,4 (see note)", note: "orgtype variants confirmed 2026-05-28"}
+    orgtype_values:   # confirmed by probing q='თბილისის მუნიციპალიტეტი'
+      "0": broad match across all roles (largest result set)
+      "1": supplier-role registry (used to resolve app_monac_id)
+      "2": buyer-role registry (smaller subset)
+      "3": broad match (similar to 0, slightly fewer)
+      "4": empty (no rows)
+    ui_usage:   # CORRECTION (2026-05-29): which orgtype the live SPA actually sends
+      org_a_buyer_box: "orgtype=3  (the buyer-name autocomplete #org_a fills app_shems_id)"
+      org_b_supplier_box: "orgtype=1  (the supplier-name autocomplete #org_b fills app_monac_id)"
+      note: >
+        The site's buyer search box uses orgtype=3 (broad), NOT orgtype=2, even though 2 is the
+        buyer-role registry. To mirror the UI exactly use 3 for buyer / 1 for supplier.
+    response:
+      format: pipe-delimited text
+      shape: "internal_id|name|reg_code|\\n"   # one record per line, trailing pipe + newline
+      note: first field is the portal-internal id used as app_monac_id (supplier) or app_shems_id (buyer).
+    empty_state: "empty body (0 bytes)"
+    error_state: not_captured
+    fixture: null
+
+  - id: search_app
+    status: documented
+    last_verified: "2026-05-29"
+    method: POST
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: search_app
+    content_type: application/x-www-form-urlencoded
+    note: "All 22 params are always sent, even when empty. Full enum tables in api_reference.md."
+    authoritative_filter_map: "docs/search_filters.json + docs/search_filters.md — EVERY filter (georgian label <-> param) and EVERY option (internal id <-> georgian name) scraped live from #search_frm by provenance/discovery/extract_filters.py. Regenerate to refresh. <select> values are INTERNAL IDS, not the visible numbers."
+    params:
+      - {name: action,                 required: true,  default: search_app, note: fixed}
+      - {name: app_t,                  required: true,  default: "0",        note: fixed}
+      - {name: search,                 required: false, default: "",         note: hidden free-text, normally empty}
+      - {name: app_reg_id,             required: false, default: "",         note: "tender announcement number. CORRECTION 2026-05-29: matches the NUMERIC part only, ignoring the type prefix — app_reg_id=NAT250000613 returns GEO/CON/SPA/NAT 250000613 alike. Filter results by exact nat_code to disambiguate."}
+      - {name: app_shems_id,           required: false, default: "0",        note: BUYER internal id; set by org_a autocomplete}
+      - {name: org_a,                  required: false, default: "",         note: buyer name search box (min 3 chars), fills app_shems_id}
+      - {name: app_monac_id,           required: false, default: "0",        note: SUPPLIER internal id; from list_org.php orgtype=1}
+      - {name: org_b,                  required: false, default: "",         note: supplier name search box (min 3 chars), fills app_monac_id}
+      - {name: app_particip_status_id, required: false, default: "0",        values: "0/200/100", note: supplier status enum}
+      - {name: app_donor_id,           required: false, default: "0",        values: "16 donors", note: see donor enum}
+      - {name: app_status,             required: false, default: "0",        values: "0,10,20,30,40,50,100,110,120,130,140", note: procurement status enum}
+      - {name: app_agr_status,         required: false, default: "0",        values: "0,10,20,30,40", note: contract status enum}
+      - {name: app_type,               required: false, default: "0",        values: "16 types (NAT/SPA/CON/...)", note: procurement type enum}
+      - {name: app_basecode,           required: false, default: "0",        values: "273 CPV categories (value=INTERNAL ID, not the CPV number)", note: "the 'შესყიდვის კატეგორია' dropdown. BROAD category = all sub-codes of that CPV group. Resolve CPV->id via docs/cpv_basecode_map.json (e.g. 45200000 -> 19003) or client.resolve_basecode(). VERIFIED 2026-05-29: app_basecode=19003 + status130 = 182 results (matches UI)."}
+      - {name: app_codes,              required: false, default: "",         note: "comma-separated raw CPV codes = EXACT code match (narrower than app_basecode). e.g. app_codes=45200000 + status130 = 77 (vs 182 for the 19003 category). Use app_basecode to mirror the UI dropdown."}
+      - {name: app_date_type,          required: false, default: "1",        values: "1=registration, 2=trade, 3=status", note: ""}
+      - {name: app_date_from,          required: false, default: "",         values: "DD.MM.YYYY", note: server-side date filter}
+      - {name: app_date_tlll,          required: false, default: "",         values: "DD.MM.YYYY", note: "till date - triple-L typo (input id is app_date_till)"}
+      - {name: app_amount_from,        required: false, default: "",         values: numeric, note: ""}
+      - {name: app_amount_to,          required: false, default: "",         values: numeric, note: ""}
+      - {name: app_currency,           required: false, default: "2",        values: "2 observed", note: hidden}
+      - {name: app_pricelist,          required: false, default: "0",        values: "0=all, 1=with, 2=without", note: ""}
+    pagination:
+      param: page
+      method: GET
+      values: "next | prev | <numeric page index> (btn_last sends the last-page number)"
+      state: "result set held server-side in session; page nav is GET action=search_app&page=<v>"
+      total_indicator: "button text 'N ჩანაწერი (გვერდი: CUR/TOTAL)' -> digits after '/'"
+      buttons: [btn_first, btn_prev, btn_next, btn_last]
+    response:
+      format: html_fragment
+      table: "table#list_apps_by_subject tbody"
+      row_id: "tr[id] -> strip leading 'A'; row also has onclick=ShowApp(<app_id>,'',0)"
+      per_page: 4
+      status_icon: "img src=images/statuses/stat<N>.png"
+    stat_icon_mapping:   # RESOLVED 2026-05-29 (was medium-priority TBD)
+      note: >
+        The stat<N>.png icon number is IDENTICAL to the app_status filter value (1:1).
+        Verified by searching once per app_status value: filter 10 -> stat10.png,
+        20 -> stat20.png, ... 140 -> stat140.png. No separate icon->status table needed.
+      fixture: data/discovery/stat_icon_mapping.txt
+    cpv_helpers:   # backends for the app_codes / app_basecode CPV inputs (see cpv_* endpoints)
+      autocomplete: "library/cpv/cpv_search.php (q,limit) -> feeds the app_codes text field"
+      tree_picker:  "library/cpv/dialog2.php (POST input_id,code_str[,cpvlang=2]) -> dynatree dialog (#cpv_dialog)"
+      basecode_map: "docs/cpv_basecode_map.json — 273 categories {id:{cpv,name}} scraped from the app_basecode <select> on the homepage. CPV number -> internal id. Rebuild via client.cpv_categories(). Use client.search_by_category(cpv, **filters) to filter by the dropdown."
+      basecode_vs_codes: "app_basecode = BROAD category (all sub-codes); app_codes = EXACT code. They give different counts — pick deliberately."
+    empty_state: "single row text 'ჩანაწერები არ არის'"
+    error_state: "no error fixture for malformed search body (filters are tolerant; unknown enum value -> empty result set)"
+    fixture: data/discovery/search_app_default_p1.html
+
+  - id: app_main
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: app_main
+    params:
+      - {name: action, required: true, default: app_main, values: app_main, note: fixed}
+      - {name: app_id, required: true, default: null,     values: numeric, note: tender id}
+      - {name: app_reg, required: false, default: "",     values: null, note: ""}
+      - {name: key,     required: false, default: "",     values: null, note: ""}
+    response:
+      format: html_fragment
+      wrapper: "div#app_main"
+      table: "div#print_area > table.ktable.with-label tbody"
+      key_value_rows: "each tr has td[0]=Georgian label, td[1]=value"
+      fields:
+        nat_code:        "label='განცხადების ნომერი'  -> strong text"
+        status:          "label='შესყიდვის სტატუსი'   -> img[src] (stat*.png) + text"
+        buyer:           "label='შემსყიდველი'         -> a[onclick=ShowProfile(id)] text"
+        bid_start:       "label='წინადადებების მიღება იწყება'   -> td text DD.MM.YYYY HH:MM"
+        bid_deadline:    "label='წინადადებების მიღება მთავრდება' -> td text DD.MM.YYYY HH:MM"
+        est_value:       "label='შესყიდვის სავარაუდო ღირებულება' -> span text (backtick thousands, GEL)"
+        cpv:             "label='შესყიდვის კატეგორია' -> td.subject_name"
+        description:     "colspan=2 row -> div.blabla text"
+      footer: "ul.date -> li[0]=created (ჩაწერა: author :: DD.MM.YYYY HH:MM), li[1]=last modified (შესწორება: ...)"
+      also: "Button #btn_appstatushistory fires action=app_statushistory (see that endpoint)"
+    empty_state: n/a
+    error_state: "invalid app_id -> PHP 'Undefined offset: 0' (controller.php line 140), not a 404"
+    fixture: "data/discovery/app_main_656756.html (awarded); app_main_681326.html (bidding); app_main_681857.html (failed-contract); app_main_685227.html (did-not-happen)"
+
+  - id: app_docs
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: app_docs
+    params:
+      - {name: action, required: true, default: app_docs, values: app_docs, note: fixed}
+      - {name: app_id, required: true, default: null,     values: numeric, note: tender id}
+      - {name: key,    required: false, default: "",      values: null, note: ""}
+    response:
+      format: html_fragment
+      wrapper: "div#app_docs"
+      layouts:   # IMPORTANT (confirmed 2026-05-29): app_docs has TWO shapes, driven by tender TYPE (+ era)
+        sectioned:
+          applies_to: "NAT, SPA, CON (the structured-announcement e-tender types), recent era"
+          structure: "section.question.level1 (#que100/que50=1.1, #que101=1.2, #que150=1.3 cost estimates, #que200=1.4, ...)"
+          file_anchor: "section#que150 div.answ-file > section > div[class^='obsolete'] > a"
+          obsolete_flag: "obsolete0=current (keep), obsolete1=superseded (skip)"
+          file_download: "library/files.php?mode=que&file=<FILE_ID>&code=<CODE>"
+          cost_estimate: "files under section#que150 (1.3 ფასების ცხრილი/ხარჯთაღრიცხვა)"
+        flat:
+          applies_to: "GEO, DEP, MEP, DAP, TEP, CNT, GRA, B2B — AND any old/legacy tender (e.g. 2014 SPA) regardless of type"
+          structure: "div.pad4px > table#tender_docs (ktable): cols მიმაგრებული ფაილები (file <a>) | თარიღი/ავტორი; plus a 'გამონაკლისის/გამოცხადების დამადასტურებელი დოკუმენტი' block and a div#chat Q&A section"
+          file_anchor: "table#tender_docs a[href*='files.php'] — uses mode=app (NOT mode=que)"
+          cost_estimate: "no #que150 section — the cost xlsx is just one row, name contains 'ხარჯთაღრიცხვა' or 'ფასების ცხრილი'"
+      type_layout_map:   # sampled live 2026-05-29 (first recent tender of each type)
+        sectioned: [NAT, SPA, CON]
+        flat: [GEO, DEP, MEP, DAP, TEP, CNT, GRA, B2B]
+        era_caveat: "old tenders use flat even for NAT/SPA/CON (verified: SPA140022279 from 2014 = flat; recent SPA = sectioned). Detect layout STRUCTURALLY, never assume by type alone."
+      qa_blocks: "sectioned: div.hst-blk id='hst-<chat_id>' per section; flat: div#chat with question blocks. Both expose .show_reply -> action=show_qa filling div#ANS<chat_id> (see show_qa)."
+    empty_state: "sectioned: section#que150 absent/empty -> no estimate. flat: table#tender_docs absent -> 'დოკუმენტაცია მიმაგრებული არ არის'"
+    error_state: "invalid app_id -> PHP 'Undefined offset: 0', not a 404"
+    parser: "tenders_client get_doc_files(app_id) -> DocsTab(layout, files[DocFile]) handles both; .cost_estimate_files selects 1.3/xlsx across layouts"
+    fixture: "data/discovery/app_docs_612033_sectioned.html (NAT); app_docs_125688_flat.html (SPA 2014 + Q&A); app_docs_687393_flat_b2b.html (B2B); app_docs_656756.html (NAT awarded)"
+
+  - id: show_qa         # clarification Q&A reply thread for a documentation section
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: show_qa
+    params:
+      - {name: action,  required: true, default: show_qa, note: fixed}
+      - {name: app_id,  required: true, default: null, values: numeric, note: tender id}
+      - {name: chat_id, required: true, default: null, values: numeric, note: "the hst-blk id (div.hst-blk id='hst-<chat_id>' in app_docs)"}
+    response:
+      format: html_fragment
+      populated: "one or more answer blocks: div.ui-widget-content...A.type3 > p.author.color-1 (span.date + buyer org :: person) + p.chatmessgase (answer text). 'A type3'=answer (vs 'Q type1'=question in app_docs #chat)."
+      note: "Reply thread (answers) for one clarification question. Filled into #ANS<chat_id> by the .show_reply toggle button."
+    empty_state: "<p class='color-2'><hr/>პასუხები არ არის</p>  (no answers)"
+    error_state: "stale lang session -> PHP 'Undefined index: lang' line 8 (re-init session)"
+    note: >
+      Discovered 2026-05-29 by grepping app_docs. Trigger: .show_reply button id '<x>_<app_id>_<chat_id>'
+      -> $.get(controller.php,{action:'show_qa',app_id,chat_id}). The question itself lives in app_docs
+      (flat layout: div#chat 'Q type1' blocks; sectioned: per-section hst-blk). chat_id = the hst/ANS id.
+    fixture: "data/discovery/show_qa_656756_23295158.html (empty); show_qa_125688_25710.html (populated answer)"
+
+  - id: application     # tender container / session primer
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: application
+    params:
+      - {name: action,  required: true,  default: application, note: fixed}
+      - {name: app_id,  required: true,  default: null, note: tender id}
+      - {name: app_reg, required: false, default: "",   note: empty}
+      - {name: key,     required: false, default: "",   note: "site JS sends key=undefined"}
+    response:
+      format: html_fragment
+      note: >
+        Builds the jQuery UI tab strip (#application_tabs). Fired by ShowApp(app_id,'',tabIdx)
+        where tabIdx 0=main,1=docs,2=bids,3=results,4=contract. Use it to read which tabs a
+        tender exposes (state-dependent). The tab strip also shows the buyer name as a
+        javascript:void(0) pseudo-link; the contract summary exposes ShowProfile(<org_id>).
+    empty_state: n/a
+    error_state: "invalid app_id -> PHP 'Undefined offset: 0' (line 140), not a 404"
+    fixture: data/discovery/application_656756.html
+
+  - id: agr_docs        # ხელშეკრულება (contract + payments)
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: agr_docs
+    session_note: >
+      Works directly in a lang-initialized session (GET /?lang=ge first). No per-tender
+      priming via action=application is needed (verified headless 2026-05-28). A PHP
+      'Undefined index: lang' error (controller.php line 8) only appears when the session
+      lang state is missing (stale/rotated cookie) — re-init the session to fix.
+    params:
+      - {name: action, required: true, default: agr_docs, note: fixed}
+      - {name: app_id, required: true, default: null,     note: tender id}
+      # NOTE: site sends NO key param for agr_docs (unlike other tabs which send key=undefined)
+    response:
+      format: html_fragment
+      wrapper: "div#agency_docs  (SAME wrapper id as agency_docs/results — quirk; distinguish by content)"
+      div_0: "ui-state-highlight - contract summary: status (agrfg* class), author::date, supplier (ShowProfile link), 'ნომერი/თანხა: N../.. / <amount> ლარი' (convertme span carries numeric amount+currency), validity dates, overdue days"
+      div_1: "pad4px - table#last_docs documents list"
+      div_2: "ui-state-highlight (div:last-of-type) - payment table"
+      payment_table_header: "თანხა | წელი | კვარტალი | გადახდის თარიღი | თარიღი/ავტორი"
+      amount_parse: "text node up to 'ლარი'; strip backtick thousands sep"
+    empty_state: "payment table: header row + single 'ჩანაწერები არ არის' row"
+    error_state: "invalid app_id -> PHP 'Undefined offset: 0' (controller.php line 390), not a 404"
+    fixture: data/discovery/agr_docs_656756.html
+
+  - id: app_bids        # შეთავაზებები (bids/offers)
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: app_bids
+    params:
+      - {name: action, required: true, default: app_bids, note: fixed}
+      - {name: app_id, required: true, default: null,     note: tender id}
+      - {name: key,    required: false, default: "",      note: "site JS sends key=undefined"}
+    response:
+      format: html_fragment
+      wrapper: "div#app_bids"
+      bidding_phase: "live view: #TenderCountdown widget + RefreshBids() auto-refresh (ShowApp(id,'',2)) while bid intake is open"
+      awarded_or_closed: >
+        bidders table (class=ktable): columns პრეტენდენტი (bidder) | ბოლო შეთავაზება თანხა/დრო
+        (last bid amount/time) | პირველი შეთავაზება (first bid amount/time) | შეთავაზებები (count).
+        Rows id='B<appid><n>'. Buttons: #refrsh (refresh), #showtdocs (technical docs -> fills #app_tdocs).
+    empty_state: "bidding-phase shows live #TenderCountdown instead of a bidders table"
+    error_state: not_captured
+    fixture: "data/discovery/app_bids_656756.html (awarded); app_bids_681326.html (bidding)"
+
+  - id: agency_docs     # შედეგები (results)
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: agency_docs
+    params:
+      - {name: action, required: true, default: agency_docs, note: fixed}
+      - {name: app_id, required: true, default: null,        note: tender id}
+      - {name: key,    required: false, default: "",         note: "site JS sends key=undefined"}
+    response:
+      format: html_fragment
+      wrapper: "div#agency_docs (SAME wrapper id as agr_docs — distinguish by content)"
+      table: "table#reports (class=ktable): cols [icon] | document (a -> files.php?mode=app&file=<id>&code=<code>) | თარიღი/ავტორი"
+      row_id: "'<file_id>.<code>.<app_id>'; doctype<NN> + obsolete0/1 classes; file_lock<0|1>.png icon"
+      note: >
+        CONFIRMED 2026-05-28: agency_docs is the შედეგები (results) tab — a documents/reports
+        table of result-stage files. Uses files.php mode=app (NOT mode=que like app_docs 1.3).
+    empty_state: "single row 'დოკუმენტაცია მიმაგრებული არ არის' (note: different text than agr_docs empty)"
+    error_state: not_captured
+    fixture: "data/discovery/agency_docs_656756.html (full); agency_docs_681326.html (empty)"
+
+  - id: profile         # ShowProfile(<org_id>) - company profile popup
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: profile
+    params:
+      - {name: action,   required: true,  default: profile, note: fixed}
+      - {name: org_id,   required: true,  default: null, values: numeric, note: "buyer org_id (from ShowProfile in app_main) OR supplier org_id (from bids table / contract)"}
+      - {name: isdialog, required: false, default: "",   values: "boolean-ish; JS passes undefined", note: "controls dialog vs inline render; empty works"}
+    response:
+      format: html_fragment
+      wrapper: "div#profile_dialog (title carries profile24.png icon)"
+      table: "table.ktable.with-label - key/value rows (td[0]=label, td[1]=value)"
+      role_label: "first row label = 'შემსყიდველი' (buyer) OR 'მიმწოდებელი' (supplier) - distinguishes org role"
+      fields:
+        org_type_and_name: "row 'შემსყიდველი'/'მიმწოდებელი' -> td[1]: legal-form label + <strong>name</strong>"
+        id_code:   "label 'საიდენტიფიკაციო კოდი' -> reg/tax code"
+        country:   "label 'ქვეყანა'"
+        city:      "label 'ქალაქი/დაბა/სოფელი'"
+        address:   "label 'მისამართი'"
+        phone:     "label 'ტელეფონი'"
+        fax:       "label 'ფაქსი'"
+        email:     "label 'ელ-ფოსტა' -> mailto anchor"
+        website:   "label 'ვებ-გვერდი'"
+      note: "Fired by ShowProfile(org_id) in spa.js: $.get(controller.php,{action:'profile',org_id,isdialog}) -> #dialog."
+    empty_state: not_observed
+    error_state: not_captured
+    fixture: "data/discovery/profile_buyer.html (org_id=42485); profile_supplier.html (org_id=32327)"
+
+  - id: lastevents      # homepage "last 5 status changes" feed
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: lastevents
+    params:
+      - {name: action, required: true, default: lastevents, values: lastevents, note: fixed}
+    response:
+      format: html_fragment
+      header: "div.ui-state-highlight — title text 'განცხადებების სტატუსების ბოლო 5 ცვლილება'"
+      table: "table#lastevents (class=ktable)"
+      row: "tr[onclick='ShowApp(app_id,\"\",0)'] — exactly 5 rows"
+      row_fields:
+        app_id:    "extracted from onclick: ShowApp(<app_id>,'',0)"
+        status:    "p.status text up to span.color-1; span.color-1 = timestamp DD.MM.YYYY HH:MM"
+        stat_icon: "img[src] -> statuses/stat<N>.png"
+        nat_code:  "strong text (e.g. NAT260009861)"
+        buyer:     "text after 'შემსყიდველი:' strong"
+        cpv:       "span.color-2 text (raw CPV code)"
+      note: "Always returns exactly 5 most-recent status change events. Not paginated."
+    empty_state: not_observed   # feed always has 5 rows in practice
+    error_state: not_captured
+    fixture: data/discovery/lastevents.html
+
+  - id: app_statushistory   # tender status change timeline (ქრონოლოგია)
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: app_statushistory
+    params:
+      - {name: action, required: true, default: app_statushistory, note: fixed}
+      - {name: app_id, required: true, default: null, note: tender id}
+    response:
+      format: html_fragment
+      wrapper: "div#z (class ui-widget-content; title <p class=paratitle> 'ქრონოლოგია')"
+      table: "table.with-free-label-history -> tbody tr, each: td[0]=timestamp DD.MM.YYYY HH:MM, td[1]=status label"
+      order: "reverse-chronological (newest first)"
+      note: >
+        Full status lifecycle for one tender. IMPORTANT: exposes finer-grained statuses than
+        the 11-value app_status SEARCH enum — e.g. 'დამატებითი რაუნდები დასრულებულია'
+        (additional rounds ended), which has no app_status filter value. Treat the app_status
+        enum as a search filter, not the complete lifecycle vocabulary.
+      wiring: "button #btn_appstatushistory in app_main -> $.get(controller.php,{app_id,action:'app_statushistory'}) -> #history"
+    empty_state: not_observed
+    error_state: not_captured
+    fixture: data/discovery/app_statushistory_656756.html
+
+  - id: app_tdocs           # ტექნიკური დოკუმენტაცია (technical docs, bids tab)
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: app_tdocs
+    params:
+      - {name: action, required: true, default: app_tdocs, note: fixed}
+      - {name: app_id, required: true, default: null, note: tender id}
+    response:
+      format: html_fragment
+      wrapper: "div#tdocs_div (class ui-widget-content; title 'ტექნიკური დოკუმენტაცია')"
+      table: "table#tdocs (class ktable): cols პრეტენდენტი (bidder) | ფაილი (file) | თარიღი (date)"
+      file_anchor: "files.php?mode=tdoc&file=<id>&code=<code>  (NOTE: a THIRD files.php mode, alongside que/app)"
+      note: "wiring: button #showtdocs in app_bids -> $.get(controller.php,{action:'app_tdocs',app_id}) -> #app_tdocs"
+    empty_state: not_observed
+    error_state: not_captured
+    fixture: data/discovery/app_tdocs_656756.html
+
+  - id: today_bids          # შესყიდვები, რომელთა ვადა დღეს იწურება (home "today" feed)
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: today_bids
+    params:
+      - {name: action, required: true, default: today_bids, note: fixed; takes no other params}
+    response:
+      format: html_fragment
+      header: "div.ui-state-highlight - 'შესყიდვები, სადაც წინადადებების მიღების ვადა დღეს იწურება ან ამოწურულია (<N>)'"
+      table: "table#today_bids (class ktable)"
+      row: "tr[onclick=ShowApp(<app_id>,'',0)] - same row markup as search results (stat icon, code, type, buyer, CPV, deadline, est value)"
+      count: "full list (not capped at 5, not paginated) - 158 rows observed"
+    empty_state: not_observed
+    error_state: not_captured
+    note: "Fired by GoToday() in spa.js (gated behind FB login in UI, but the endpoint itself is anonymous)."
+    fixture: data/discovery/today_bids.html
+
+  - id: view_bid            # ShowBidHistory(app_id,bidder_id) - one bidder's bid history
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/controller.php
+    action: view_bid
+    params:
+      - {name: action, required: true, default: view_bid, note: fixed}
+      - {name: app_id, required: true, default: null, values: numeric, note: tender id (ShowBidHistory's 1st arg)}
+      - {name: bid_id, required: true, default: null, values: numeric, note: "BIDDER internal id (ShowBidHistory's 2nd arg) - NOT the row's bid id"}
+    response:
+      format: html_fragment
+      wrapper: "div.pad4px"
+      table: "table.ktable: cols თანხა (amount, in <strong>, backtick thousands) | თარიღი (datetime DD.MM.YYYY HH:MM)"
+      note: "One row per bid that bidder placed (the bid trail). Inserted as a sub-row under the bidder in app_bids."
+      wiring: "onclick=ShowBidHistory(app_id,bidder_id) in app_bids -> $.get(controller.php,{action:'view_bid',app_id,bid_id}) "
+    empty_state: not_observed
+    error_state: not_captured
+    fixture: "data/discovery/view_bid_656756_759455.html"
+
+  - id: cpv_search          # CPV-code autocomplete (backs app_codes search field)
+    status: partial
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/cpv/cpv_search.php
+    action: null
+    params:
+      - {name: q,     required: true,  default: null, values: "code or text (min 3 chars)", note: autocomplete query}
+      - {name: limit, required: false, default: "50",  note: max rows}
+    response:
+      format: "pipe/newline-delimited (row[0]=code, row[1]=label) per spa.js formatItem"
+      note: >
+        CONFIRMED EMPTY 2026-05-29: returns HTTP 200 with a 0-byte body for every q/limit variant —
+        not only to curl but also when fetched FROM THE LIVE PAGE via Playwright (correct cookies,
+        Referer, X-Requested-With). The autocomplete fires (q,limit,timestamp) but yields no rows,
+        i.e. the feature is effectively dead server-side. Use the tree picker (cpv_dialog) instead.
+    fixture: "data/discovery/cpv_search_sample.html (empty body - documents the empty response)"
+
+  - id: cpv_dialog          # CPV tree picker (dynatree) for the CPV category/codes filter
+    status: documented
+    last_verified: "2026-05-29"
+    method: POST
+    url: https://tenders.procurement.gov.ge/public/library/cpv/dialog2.php
+    content_type: application/x-www-form-urlencoded
+    action: null
+    params:
+      - {name: input_id, required: true,  default: null, values: "cpv_codes_search | qep_cpv_codes_search", note: target input the picker writes into}
+      - {name: code_str, required: false, default: "",   note: currently selected codes to pre-check}
+      - {name: cpvlang,  required: false, default: "1",  values: "1=Georgian, 2=English", note: CPV label language}
+    response:
+      format: html_fragment
+      wrapper: "div#cpv_dialog + div#tree (jQuery UI dialog hosting a dynatree)"
+      tree_source: "dynatree lazy-loads child nodes from library/cpv/lazy_node.php"
+    note: "Buttons #cpv_tree / #btn_cpveng (English) in spa.js POST here -> #dialog."
+    fixture: data/discovery/cpv_dialog2.html
+
+  - id: files_download      # binary file download endpoint (shared by all tabs)
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/files.php
+    action: null
+    params:
+      - {name: mode, required: true,  default: null, values: "que | app | tdoc | contract", note: see modes below}
+      - {name: file, required: true,  default: null, values: numeric, note: file id (from the anchor href)}
+      - {name: code, required: false, default: null, values: numeric, note: "access code; PRESENT for que/app/tdoc, OMITTED for mode=contract"}
+    modes:
+      que:      "app_docs section files (e.g. 1.3 cost-estimate xlsx)"
+      app:      "agency_docs (results) files AND agr_docs supplementary docs"
+      tdoc:     "app_tdocs technical-documentation files"
+      contract: "agr_docs contract file itself (table#last_docs) - href is mode=contract&file=<id> with NO code param"
+    response: "binary file with correct Content-Type; requires the SPALITE session"
+    note: "mode value is parsed straight from each anchor's href query string - never hardcode it."
+    fixture: null
+
+  - id: permalink           # deep link to a tender (no SPA navigation needed)
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: "https://tenders.procurement.gov.ge/public/?go=<app_id>&lang=ge"
+    action: null
+    note: >
+      Direct tender permalink, surfaced in app_main as 'შესყიდვის ბმული'. Loads the SPA pre-focused
+      on the tender (equivalent to ShowApp(app_id)). Useful for sharing / re-entry; the underlying
+      data still comes from the action=application + tab endpoints.
+    fixture: null
+
+  - id: who                 # online session / guest counter (non-procurement, minor)
+    status: documented
+    last_verified: "2026-05-29"
+    method: GET
+    url: https://tenders.procurement.gov.ge/public/library/who.php
+    action: null
+    response:
+      format: json
+      shape: "{osess: <logged-in sessions>, guests: <guest count>}"
+    note: "Site-wide presence counter (Who() in spa.js). Not tender data; documented for completeness."
+    fixture: null
+
+# --- OUT-OF-SCOPE MODULE ENTRY-POINT MAP (boundary, not reverse-engineered) ---
+# Per project scope, these modules are NOT documented in depth. Listed so coverage of the
+# Procurement (შესყიდვები) section is provably complete: everything else the SPA exposes is here.
+out_of_scope_modules:
+  ssp:
+    entry: "controller.php?action=ssp&org_id=0 -> #dialog"
+    detail_controller: "library/ssp/ssp_controller.php?action=view&ssp_id="
+  smp:
+    entry: "controller.php?action=smp&org_id=0 -> #dialog"
+    detail_controller: "library/smp/smp_controller.php?action=view&smp_id="
+  con:
+    entry: "controller.php?action=con&org_id=0 -> #dialog"
+    detail_controller: "library/con/con_controller.php?action=application&con_agr_id="
+  splan:
+    entry: "controller.php?action=splan&org_id=0 -> #dialog"
+  qep_mrs:
+    entry: "qep/qep_controller.php?action=search_qep&search= -> #app_list (btn_mrs / Market Research)"
+    detail_controller: "library/qep/qep_controller.php?action=application&app_id="
+  note: "CMR/CON/SMP/ePLAN/MRS/Market Research are explicitly out of scope for this project (see README.md / AGENTS.md)."
+
+# --- TENDER DETAIL TAB MODEL (confirmed 2026-05-28) ---
+# A tender loads via action=application&app_id=<id>&app_reg=&key= which builds a jQuery UI
+# tabs widget. The tab set is STATE-DEPENDENT:
+#   Always present: app_main, app_docs, app_bids (შეთავაზებები), agency_docs (შედეგები)
+#   Conditional:    agr_docs (ხელშეკრულება) — appears ONLY once a contract is signed.
+# Verified across 4 states (fixtures in data/discovery/):
+#   awarded         656756 -> 5 tabs (agr_docs present)
+#   bidding-phase   681326 -> 4 tabs (no agr_docs; app_bids shows live countdown)
+#   failed-contract 681857 (app_agr_status=30) -> 5 tabs; agr_docs PRESENT (contract signed then failed)
+#   did-not-happen  685227 (app_status=110)   -> 4 tabs (no agr_docs; never reached a contract)
+# So agr_docs presence == "a contract was ever signed", regardless of later contract outcome.

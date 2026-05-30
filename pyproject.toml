@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "procurement-ge-api"
+version = "1.0.0"
+description = "Reverse-engineered Python client + full documentation for the Georgian e-Procurement portal (tenders.procurement.gov.ge)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Misho Gongadze", email = "mishogongadze7@gmail.com" }]
+keywords = ["procurement", "georgia", "tenders", "scraping", "api-client"]
+
+# Runtime dependencies — the client itself needs only these three.
+# (playwright/duckdb/etc. in requirements.txt are for the provenance/discovery
+#  scripts only and are NOT required to use tenders_client.)
+dependencies = [
+    "requests>=2.28",
+    "beautifulsoup4>=4.11",
+    "lxml>=4.9",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+
+[project.urls]
+Documentation = "https://github.com/REPLACE_ME/procurement-ge-api/blob/main/docs/api_reference.md"
+Source = "https://github.com/REPLACE_ME/procurement-ge-api"
+
+[tool.setuptools]
+# Ship only the importable client package. docs/, tests/, examples/, provenance/
+# are repo content, not part of the installed wheel.
+packages = ["tenders_client"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

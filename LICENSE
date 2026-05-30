@@ -1,0 +1,36 @@
+Copyright (c) 2026 Misho Gongadze. All rights reserved.
+
+PROPRIETARY — NOT OPEN SOURCE
+
+This repository ("the Work") — including the documentation under docs/, the
+Python package tenders_client/, the examples, tests, and provenance scripts —
+is proprietary and confidential.
+
+No license, express or implied, is granted to any person obtaining a copy of
+the Work. Without the prior written permission of the copyright holder, you may
+NOT:
+
+  * use the Work for any commercial or non-commercial purpose;
+  * copy, reproduce, or store the Work, in whole or in part;
+  * modify, adapt, translate, or create derivative works;
+  * distribute, publish, sublicense, sell, rent, or lease the Work;
+  * remove or alter this notice.
+
+Access to this repository does not transfer any ownership or intellectual
+property rights. All rights not expressly granted in writing are reserved.
+
+To obtain a license to use this Work, contact: mishogongadze7@gmail.com
+
+----------------------------------------------------------------------------
+ABOUT THE DATA SOURCE
+
+This Work documents and automates the publicly accessible pages of
+tenders.procurement.gov.ge. It contains no credentials and accesses no
+authenticated or non-public endpoints. The procurement data itself is published
+by the State Procurement Agency of Georgia and is subject to that agency's own
+terms. This license covers only the documentation and software in this
+repository, not the underlying public data.
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. The portal may
+change at any time; endpoints and selectors documented here carry a
+"last verified" date and are not guaranteed to remain accurate.

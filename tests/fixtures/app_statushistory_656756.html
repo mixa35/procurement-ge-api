@@ -1,0 +1,42 @@
+<div class="ui-widget-content ui-corner-all pad4px" id="z" style="margin:4px 0">
+
+<p class="paratitle">
+	ქრონოლოგია
+	<button style="float:right" type="button" id="nohist"></button>
+</p>
+<table width="100%" cellspacing="0" cellpadding="4" class="with-free-label-history ui-corner-all">
+<tbody>
+	<tr bgcolor="#ffffff">
+		<td width="140">17.12.2025 15:58</td>
+		<td>ხელშეკრულება დადებულია</td>
+	</tr><tr bgcolor="#ffffff">
+		<td width="140">11.12.2025 17:47</td>
+		<td>მიმდინარეობს ხელშეკრულების მომზადება</td>
+	</tr><tr bgcolor="#ffffff">
+		<td width="140">11.12.2025 17:46</td>
+		<td>გამარჯვებული გამოვლენილია</td>
+	</tr><tr bgcolor="#ffffff">
+		<td width="140">05.12.2025 12:31</td>
+		<td>შერჩევა/შეფასება</td>
+	</tr><tr bgcolor="#ffffff">
+		<td width="140">05.12.2025 12:30</td>
+		<td>დამატებითი რაუნდები დასრულებულია</td>
+	</tr><tr bgcolor="#ffffff">
+		<td width="140">02.12.2025 00:03</td>
+		<td>წინადადებების მიღება დაწყებულია</td>
+	</tr><tr bgcolor="#ffffff">
+		<td width="140">24.11.2025 12:38</td>
+		<td>გამოცხადებულია</td>
+	</tr>
+</tbody>
+</table>
+
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#nohist').button({text:false, icons:{primary: "ui-icon-triangle-1-n"}}).click(function(){
+		$('#history').html('')
+	});
+});
+</script>
