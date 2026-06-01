@@ -54,6 +54,20 @@ sectioned-layout fixture ships at `tests/fixtures/app_docs_612033_sectioned.html
 
 **No upload-date column.** Unlike `agency_docs` `<table id="reports">`, section 1.3 has no timestamp per file — `document_uploaded_at` stays NULL on insert.
 
+**§1.3 is one section of many — the sectioned form is large.** Verified live (NAT260011223,
+announced): a sectioned `app_docs` is a full structured questionnaire — §1.1 object name,
+**§1.2** technical-spec block (carries the buyer's project/geology/structural-assessment PDFs),
+**§1.3** the cost estimate (usually 1 `.xlsx`, sometimes several), then annex-template sections
+(დანართი N3 გამოცდილება, N4 ამხანაგობა, N6 გრაფიკი), §4.1.x price-adequacy rules, §7.1.1 advance
+terms, a **draft contract** (`ხელშეკრულების პროექტი.pdf`), §9.1 contact person, and **§11.1 the
+commission ოქმი** approving the conditions. So: files of real value live in sections *other than*
+1.3, and `ოქმი`/contract drafts appear here too — not only in Results. The client targets §1.3 for
+the estimate; widen the selector if you want the full buyer package.
+
+> The `"დოკუმენტაცია მიმაგრებული არ არის"` string also appears here as the empty-state of the
+> per-section **Q&A / clarification** blocks (`hst-blk`), even when documents *are* attached
+> elsewhere on the tab. Don't treat that string as "tab has no documents".
+
 ### ⚠️ Second layout — FLAT (GEO/DEP/MEP/DAP/TEP/CNT/GRA/B2B, and all legacy tenders)
 
 `app_docs` returns a completely different shape for non-(NAT/SPA/CON) types and for older tenders.
@@ -176,7 +190,16 @@ Captured 2026-05-29 from tender app_id=656756 (awarded state).
 - Iterate `table.ktable.with-label tbody tr` and match by `td[0].text.strip()`.
 - Status icon is `td[1] img[src]` → `stat<N>.png`; N maps to `app_status` enum value.
 - Buyer `org_id` is in `onclick="ShowProfile(<id>)"` — useful for profile lookups.
-- Estimated value: strip backtick, strip ` GEL`, parse as float.
+- Estimated value: strip backtick, strip ` GEL`/` ლარი`, parse as float.
+- **Currency label is inconsistent** — the same field renders `GEL` on some views/tenders and
+  `ლარი` on others (e.g. the contract tab). Strip *either* suffix; don't assume one.
+- **Additional rows seen live** (present per tender, match by label — don't assume a fixed set):
+  წინადადება წარმოდგენილი უნდა იყოს (VAT basis: დღგ-ს გათვალისწინებით / გარეშე),
+  კლასიფიკატორის კოდები (CPV code list), მოწოდების ვადა (delivery term),
+  შესყიდვის რაოდენობა ან მოცულობა (quantity/volume), დამატებითი ინფორმაცია (free text),
+  **შეთავაზების ფასის კლების ბიჯი** (price-reduction step), **გარანტიის ოდენობა** (bid-guarantee
+  amount) and **გარანტიის მოქმედების ვადა** (guarantee validity, days). Treat the table as an
+  open-ended label→value map, not a fixed schema.
 
 ---
 
@@ -232,6 +255,12 @@ Captured 2026-05-29 from tender app_id=656756. For the live-bidding state see fi
 - Amount: `strong` text — strip backtick thousands sep.
 - Bid history: `ShowBidHistory(app_id, bidder_id)` — action not yet captured.
 - Live-bidding state: `#TenderCountdown` widget replaces the table; `RefreshBids()` auto-polls.
+- **Three distinct states** (verified live): (1) *announced but bidding not yet open* → the
+  bidders table renders with its header and an **empty body** (no countdown, no rows); (2)
+  *bidding open* → `#TenderCountdown`; (3) *closed* → the populated table above. So an empty
+  bids table does not mean "no bids" — check the tender status first.
+- The `ტექნიკური დოკუმენტაცია` button (`#showtdocs`) and `გვერდის განახლება` (`#refrsh`) are
+  always present regardless of state.
 
 ---
 
@@ -282,7 +311,61 @@ Captured 2026-05-29 from tender app_id=656756 (awarded, multiple result files).
 - Row `id` format: `<file_id>.<code>.<app_id>` — split on `.` to extract components.
 - Skip rows with `obsolete1` class (superseded versions).
 - Download URL: `files.php?mode=app&file=<file_id>&code=<code>` — note `mode=app` (not `mode=que`).
-- `doctype<NN>` class encodes document type; mapping not yet captured.
+- `doctype<NN>` class encodes a coarse document group. Sampled live across 7 tenders
+  (2018→2026), only three values seen:
+  - **`doctype30`** — procedural / agency decisions: ინტერესთა კონფლიქტი (conflict of
+    interest), ოქმი (commission minutes), წერილი (letters), შეტყობინება (notifications).
+  - **`doctype40`** — a single commission letter/protocol (typically 1 per tender).
+  - **`doctype100`** — contract-stage / contractor-submitted bundle: ხელშეკრულება
+    (the signed contract), the awarded **ხარჯთაღრიცხვა / ფასების ცხრილი** (cost estimate /
+    price schedule), გეგმა-გრაფიკი (work schedule), გამოცდილება, პერსონალი, მინდობილობა,
+    დანართი N1/N3/N5, drawings, etc.
+  - **`doctype` is NOT a reliable cost-estimate filter** — `doctype100` mixes the price
+    sheet with everything else contractual. Treat it as a hint, not a selector.
+
+### Finding the awarded contractor's cost estimate (ხარჯთაღრიცხვა / ფასების ცხრილი)
+
+This is the **highest-value file in the whole tender**: the **awarded contractor's** price
+schedule, surfaced in the Results tab (usually `.xlsx`, often with a `-signed.pdf` countersigned
+copy alongside). Unlike the buyer's `app_docs` §1.3 estimate — which lists required materials but
+frequently omits prices or carries placeholder/inaccurate ones — this file contains the
+contractor's real per-material pricing.
+
+> Note: the *content* is the contractor's pricing, but the row author/uploader is often an
+> agency officer who publishes the whole result package (the same person frequently uploads the
+> commission ოქმი in the same batch). Treat the file as "the contractor's cost estimate as
+> published in Results", not as proof of who clicked upload.
+
+**It appears only late in the lifecycle.** Verified live across states: at status 130
+(*contract being prepared*) the Results tab carries **only procedural docs** (ინტერესთა
+კონფლიქტი, ოქმი, მიმართვა) — **no contractor cost sheet yet**. The cost estimate and the rest
+of the contractor bundle (personnel, power-of-attorney, experience, schedule, extracts) appear
+only once the contract is concluded (**status 140**). On a freshly announced tender (status 10)
+Results is empty (`დოკუმენტაცია მიმაგრებული არ არის`).
+
+**It is not always present, and the filename is unreliable.** Sampled live:
+- Sometimes the keyword is in the name: `ხარჯთაღრიცხვა მინი მოედანი.xlsx`,
+  `ხარჯთაღრიცხვა (დანართი N1).xlsx`.
+- Often it is **not**: the cost sheet is named by location or annex number with no keyword
+  at all — e.g. `ფონიჭალა 3 N26 ფეხბურთის მოედანი.xlsx`, `ვასაძის ქუჩა - boloi.xlsx`,
+  `დანართი N3- bolo.xlsx`, `... დამუშავებული ასატვირთი - 3.xlsx`.
+- **Spelling is not safe to rely on either** — a real live file is named
+  `ხარჯთაღრიხცვა საბავშვო მოედანი.xlsx` (note the transposed letters `ხც` vs `ცხ`), which an
+  exact `ხარჯთაღრიცხვა` match silently drops.
+- Multiple cost sheets per tender are common (one `.xlsx` per object/lot, often each paired
+  with a countersigned `-signed.pdf`).
+- Some tenders ship no contractor cost sheet in Results at all (only contracts/protocols).
+
+**So we cannot identify it in advance by name or doctype.** Recommended approach:
+1. **Cheap pre-filter** — keep `doctype100` rows ending in `.xls`/`.xlsx` (and any name
+   matching `ხარჯთაღრიცხვა` / `ფასების ცხრილი`) as strong candidates.
+2. **AI/content classification for the rest** — download the candidate spreadsheets and let
+   a model inspect the sheet (column headers like ერთე. ფასი / ღირებულება / რაოდენობა,
+   line-item structure) to decide whether it is a price schedule. This is the only robust
+   way to catch the location-named / `bolo` / `დანართი N#` cases that carry no keyword.
+
+> ⚠️ A pure name-keyword match will silently miss a large share of real cost estimates.
+> Content inspection (AI) is required for complete coverage.
 
 ---
 
@@ -371,7 +454,11 @@ Captured 2026-05-29. Always returns exactly 5 most-recent status-change events.
 
   <!-- DIV 0: Contract summary -->
   <div class="ui-state-highlight ui-corner-all">
-    <!-- Winner name, contract number/amount, validity dates -->
+    <!-- Contract status label + author/date, then a days-to-expiry countdown -->
+    მიმდინარე ხელშეკრულება        <!-- contract status (current / executed / unfulfilled / ...) -->
+    Author Name :: 30.04.2026
+    <strong>91</strong> დღე ხელშეკრულების მოქმედების ვადის ამოწურვამდე  <!-- days until expiry -->
+    <!-- Winner name, contract number/amount, validity dates, contract date -->
     ზოდი პლიუსი
     ნომერი/თანხა: N56 30.03.2026 / 19540.8 ლარი
     ხელშეკრულება ძალაშია: 30.03.2026 - 31.05.2026
@@ -427,7 +514,14 @@ Captured 2026-05-29. Always returns exactly 5 most-recent status-change events.
 ```
 
 **Contract document link (`table#last_docs`)** uses `files.php?mode=contract&file=<id>` — note
-**no `code` param** (unlike `mode=que`/`app`/`tdoc`, which all carry `code`).
+**no `code` param** (unlike `mode=que`/`app`/`tdoc`, which all carry `code`). Files *inside* the
+documents list still use `mode=app&file=&code=` (e.g. `ავანსი.pdf`).
+
+**Payment block header (above the payment table)** carries a `ფაქტობრივი გადახდები` heading and a
+summary line: `ხელშეკრულების თანხა: <amount>` and `გადახდილი თანხა: <amount> (<pct>%)` — a quick
+contract-amount-vs-paid figure without summing the rows. Each payment row's amount cell also
+embeds the funding source (e.g. `ადგილობრივი თვითმართველი ერთეულის ბიუჯეტი`, `საკუთარი შემოსავლები`)
+and may be tagged `(ავანსი)` for advances.
 
 ---
 

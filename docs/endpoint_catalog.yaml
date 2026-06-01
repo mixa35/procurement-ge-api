@@ -146,9 +146,20 @@ endpoints:
         buyer:           "label='შემსყიდველი'         -> a[onclick=ShowProfile(id)] text"
         bid_start:       "label='წინადადებების მიღება იწყება'   -> td text DD.MM.YYYY HH:MM"
         bid_deadline:    "label='წინადადებების მიღება მთავრდება' -> td text DD.MM.YYYY HH:MM"
-        est_value:       "label='შესყიდვის სავარაუდო ღირებულება' -> span text (backtick thousands, GEL)"
+        est_value:       "label='შესყიდვის სავარაუდო ღირებულება' -> span text (backtick thousands; currency suffix GEL *or* ლარი — inconsistent, strip either)"
         cpv:             "label='შესყიდვის კატეგორია' -> td.subject_name"
         description:     "colspan=2 row -> div.blabla text"
+      optional_fields:   # verified live 2026-06-01; present per-tender, match by label (open-ended map, not fixed schema)
+        proc_type:       "label='შესყიდვის ტიპი'"
+        announce_date:   "label='შესყიდვის გამოცხადების თარიღი'"
+        vat_basis:       "label='წინადადება წარმოდგენილი უნდა იყოს' (დღგ-ს გათვალისწინებით/გარეშე)"
+        cpv_codes:       "label='კლასიფიკატორის კოდები' -> list of CPV codes"
+        delivery_term:   "label='მოწოდების ვადა'"
+        quantity:        "label='შესყიდვის რაოდენობა ან მოცულობა'"
+        extra_info:      "label='დამატებითი ინფორმაცია' (free text)"
+        bid_step:        "label='შეთავაზების ფასის კლების ბიჯი' (price-reduction step)"
+        guarantee_amt:   "label='გარანტიის ოდენობა' (bid-guarantee amount)"
+        guarantee_term:  "label='გარანტიის მოქმედების ვადა' (days)"
       footer: "ul.date -> li[0]=created (ჩაწერა: author :: DD.MM.YYYY HH:MM), li[1]=last modified (შესწორება: ...)"
       also: "Button #btn_appstatushistory fires action=app_statushistory (see that endpoint)"
     empty_state: n/a
@@ -175,7 +186,15 @@ endpoints:
           file_anchor: "section#que150 div.answ-file > section > div[class^='obsolete'] > a"
           obsolete_flag: "obsolete0=current (keep), obsolete1=superseded (skip)"
           file_download: "library/files.php?mode=que&file=<FILE_ID>&code=<CODE>"
-          cost_estimate: "files under section#que150 (1.3 ფასების ცხრილი/ხარჯთაღრიცხვა)"
+          cost_estimate: "files under section#que150 (1.3 ფასების ცხრილი/ხარჯთაღრიცხვა) — usually 1 xlsx, sometimes several"
+          other_sections: >
+            §1.3 is one of MANY sections (verified live 2026-06-01). Valuable buyer files also live
+            elsewhere on the tab: §1.2 technical-spec block (project/geology/structural PDFs), annex
+            templates (დანართი N3 გამოცდილება, N4 ამხანაგობა, N6 გრაფიკი), a draft contract
+            (ხელშეკრულების პროექტი.pdf), and §11.1 the commission ოქმი approving conditions. So ოქმი /
+            contract drafts are NOT exclusive to Results — they appear in app_docs too. get_doc_files
+            targets §1.3 only; widen the selector for the full buyer package.
+          qa_empty_string: "'დოკუმენტაცია მიმაგრებული არ არის' is ALSO the per-section Q&A (hst-blk) empty-state — not proof the tab has no documents"
         flat:
           applies_to: "GEO, DEP, MEP, DAP, TEP, CNT, GRA, B2B — AND any old/legacy tender (e.g. 2014 SPA) regardless of type"
           structure: "div.pad4px > table#tender_docs (ktable): cols მიმაგრებული ფაილები (file <a>) | თარიღი/ავტორი; plus a 'გამონაკლისის/გამოცხადების დამადასტურებელი დოკუმენტი' block and a div#chat Q&A section"
@@ -253,9 +272,9 @@ endpoints:
     response:
       format: html_fragment
       wrapper: "div#agency_docs  (SAME wrapper id as agency_docs/results — quirk; distinguish by content)"
-      div_0: "ui-state-highlight - contract summary: status (agrfg* class), author::date, supplier (ShowProfile link), 'ნომერი/თანხა: N../.. / <amount> ლარი' (convertme span carries numeric amount+currency), validity dates, overdue days"
-      div_1: "pad4px - table#last_docs documents list"
-      div_2: "ui-state-highlight (div:last-of-type) - payment table"
+      div_0: "ui-state-highlight - contract summary: status label (e.g. 'მიმდინარე ხელშეკრულება'; agrfg* class), author::date, a days-to-expiry countdown ('<N> დღე ...ვადის ამოწურვამდე'), supplier (ShowProfile link), 'ნომერი/თანხა: N../.. / <amount> ლარი' (convertme span carries numeric amount+currency), validity dates, contract date"
+      div_1: "pad4px - table#last_docs documents list. Contract file link = files.php?mode=contract&file=<id> (NO code param); files inside the list still use mode=app&file=&code="
+      div_2: "ui-state-highlight (div:last-of-type) - ფაქტობრივი გადახდები: summary line 'ხელშეკრულების თანხა: X' + 'გადახდილი თანხა: Y (Z%)', then payment table (amount[+funding source, may be (ავანსი)] | year | quarter | pay date | date/author)"
       payment_table_header: "თანხა | წელი | კვარტალი | გადახდის თარიღი | თარიღი/ავტორი"
       amount_parse: "text node up to 'ლარი'; strip backtick thousands sep"
     empty_state: "payment table: header row + single 'ჩანაწერები არ არის' row"
@@ -280,7 +299,12 @@ endpoints:
         bidders table (class=ktable): columns პრეტენდენტი (bidder) | ბოლო შეთავაზება თანხა/დრო
         (last bid amount/time) | პირველი შეთავაზება (first bid amount/time) | შეთავაზებები (count).
         Rows id='B<appid><n>'. Buttons: #refrsh (refresh), #showtdocs (technical docs -> fills #app_tdocs).
-    empty_state: "bidding-phase shows live #TenderCountdown instead of a bidders table"
+      states: >
+        THREE states (verified live 2026-06-01): (1) announced but intake not yet open -> bidders
+        table renders with header + EMPTY body (no countdown, no rows); (2) intake open -> #TenderCountdown;
+        (3) closed/awarded -> populated table. An empty bids table does NOT mean 'no bids' — check status.
+        Bidder offer prices (first/last) are shown inline as numbers; per-bidder trail via [N] ნახვა -> view_bid.
+    empty_state: "bidding-phase shows live #TenderCountdown; pre-intake shows an empty bidders table (header only)"
     error_state: not_captured
     fixture: "data/discovery/app_bids_656756.html (awarded); app_bids_681326.html (bidding)"
 
@@ -299,6 +323,21 @@ endpoints:
       wrapper: "div#agency_docs (SAME wrapper id as agr_docs — distinguish by content)"
       table: "table#reports (class=ktable): cols [icon] | document (a -> files.php?mode=app&file=<id>&code=<code>) | თარიღი/ავტორი"
       row_id: "'<file_id>.<code>.<app_id>'; doctype<NN> + obsolete0/1 classes; file_lock<0|1>.png icon"
+      doctype_map:   # sampled live across 7 tenders 2018->2026 (only 3 values seen)
+        doctype30: "procedural/agency decisions: ინტერესთა კონფლიქტი, ოქმი (commission minutes), წერილი, შეტყობინება"
+        doctype40: "single commission letter/protocol (usually 1 per tender)"
+        doctype100: "contract-stage / contractor-submitted bundle: ხელშეკრულება (signed contract), the awarded ხარჯთაღრიცხვა/ფასების ცხრილი (cost estimate), გეგმა-გრაფიკი (schedule), გამოცდილება, პერსონალი, მინდობილობა, დანართი N1/N3/N5, drawings"
+        caveat: "doctype is a coarse hint, NOT a cost-estimate selector — doctype100 mixes the price sheet with all other contractual files"
+      cost_estimate: >
+        HIGH-VALUE: the awarded CONTRACTOR's ხარჯთაღრიცხვა/ფასების ცხრილი (real per-material
+        prices) can appear here as a doctype100 .xls/.xlsx (often plus a -signed.pdf), distinct
+        from the buyer's app_docs §1.3 estimate (which often lacks accurate prices). NOT always
+        present and the filename is UNRELIABLE — frequently named by location/annex with no
+        keyword (e.g. 'ფონიჭალა 3 N26 ფეხბურთის მოედანი.xlsx', 'ვასაძის ქუჩა - boloi.xlsx',
+        'დანართი N3- bolo.xlsx'). Cannot be identified in advance by name or doctype. Recommended:
+        pre-filter doctype100 spreadsheets + keyword matches, then use AI/content classification
+        (inspect sheet headers ერთე.ფასი/ღირებულება/რაოდენობა) to confirm. Name-only matching
+        silently misses many real cost sheets. See docs/html_structure.md Results Tab section.
       note: >
         CONFIRMED 2026-05-28: agency_docs is the შედეგები (results) tab — a documents/reports
         table of result-stage files. Uses files.php mode=app (NOT mode=que like app_docs 1.3).
