@@ -200,6 +200,16 @@ Captured 2026-05-29 from tender app_id=656756 (awarded state).
   **შეთავაზების ფასის კლების ბიჯი** (price-reduction step), **გარანტიის ოდენობა** (bid-guarantee
   amount) and **გარანტიის მოქმედების ვადა** (guarantee validity, days). Treat the table as an
   open-ended label→value map, not a fixed schema.
+- **The label set itself varies by tender TYPE (verified live) — do not hardcode `შემსყიდველი`
+  or `შესყიდვის სავარაუდო ღირებულება`:**
+  - **Grant (GRA) / donor (DEP)** add `დონორი` (donor), `პროგრამის დასახელება` (program),
+    `ლოტის დასახალება / N:` (lot), `პროექტის ხანგრძლივობა` (project duration). **GRA replaces the
+    buyer row `შემსყიდველი` with `ადმინისტრირებას უწევს` (administered by)** — a buyer lookup keyed
+    on `შემსყიდველი` returns nothing for GRA. GRA also omits category/CPV, guarantee and bid-step.
+  - **Price-list (პრეისკურანტი) tenders** rename the value row to
+    **`პრეისკურანტის სავარაუდო ღირებულება`** and add **`შესყიდვის ობიექტის სახელშეკრულებო ღირებულება`**
+    — an exact match on `შესყიდვის სავარაუდო ღირებულება` misses the estimate here.
+  - **B2B** omits the guarantee rows (shorter table); keeps `შემსყიდველი`, category, bid-step.
 
 ---
 
@@ -253,8 +263,17 @@ Captured 2026-05-29 from tender app_id=656756. For the live-bidding state see fi
 - Row `id` format: `B<app_id><bidder_id>` — strip leading `B<app_id>` to get bidder internal id.
 - Winner row has `class="activebid1"` on its cells.
 - Amount: `strong` text — strip backtick thousands sep.
-- Bid history: `ShowBidHistory(app_id, bidder_id)` — action not yet captured.
+- Bid history: `ShowBidHistory(app_id, bidder_id)` → `action=view_bid` (documented below).
 - Live-bidding state: `#TenderCountdown` widget replaces the table; `RefreshBids()` auto-polls.
+- **Bidders show from selection/evaluation onward (status 40+), not only when awarded** —
+  verified live on a B2B at `შერჩევა/შეფასება` with 6 bidders already listed.
+- **Type variants (verified live):**
+  - **Donor tenders (DEP)** render an *extra* simple table — `პრეტენდენტი | შეთავაზებული თანხა |
+    თარიღი` (single submitted offer, no auction rounds) — **before** the standard table. Both
+    list the same bidders. Parse the standard (`tr[id^="B"]`) table; the extra one is a no-rounds
+    summary.
+  - **Grant tenders (GRA)** use the header `განმცხადებელი` (applicant) instead of `პრეტენდენტი`.
+    Don't match the bidder column by that exact header text.
 - **Three distinct states** (verified live): (1) *announced but bidding not yet open* → the
   bidders table renders with its header and an **empty body** (no countdown, no rows); (2)
   *bidding open* → `#TenderCountdown`; (3) *closed* → the populated table above. So an empty
@@ -316,6 +335,8 @@ Captured 2026-05-29 from tender app_id=656756 (awarded, multiple result files).
   - **`doctype30`** — procedural / agency decisions: ინტერესთა კონფლიქტი (conflict of
     interest), ოქმი (commission minutes), წერილი (letters), შეტყობინება (notifications).
   - **`doctype40`** — a single commission letter/protocol (typically 1 per tender).
+  - **`doctype50`** — agency decision/closure protocols, e.g. `შესყიდვის შეწყვეტის ოქმი`
+    (termination protocol, on terminated tenders) and TEP/prequalification result protocols.
   - **`doctype100`** — contract-stage / contractor-submitted bundle: ხელშეკრულება
     (the signed contract), the awarded **ხარჯთაღრიცხვა / ფასების ცხრილი** (cost estimate /
     price schedule), გეგმა-გრაფიკი (work schedule), გამოცდილება, პერსონალი, მინდობილობა,
@@ -601,6 +622,19 @@ Fixture `app_tdocs_656756.html`.
 ```
 
 **Parser notes:** `#tdocs tbody tr` → bidder / file anchor (`mode=tdoc`) / date.
+
+**This is a primary BID-STAGE pricing source (verified live).** The files here are the bidders'
+own priced submissions, keyed by bidder:
+- **Price-list (პრეისკურანტი) tenders** — the bidder's unit-price catalog lives here as a
+  `... პრეისკურანტი .xlsx` (e.g. `მომსახურების პრეისკურანტი.xlsx`). It is **not** in the bids table
+  or `view_bid` (which only show a single sum + date) — `app_tdocs` is the only place to get the
+  per-line prices.
+- **MEP / works tenders** — bidders attach their `ხარჯთაღრიცხვა-signed.pdf` and a `წინადადება .xlsx`
+  (priced proposal) here.
+
+So `app_tdocs` is the bid-time analogue of the awarded contractor cost estimate in `agency_docs`:
+same caveats apply (filename unreliable, spelling varies) → use content/AI classification, not a
+name match, to find the priced sheet.
 
 ---
 

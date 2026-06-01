@@ -160,6 +160,11 @@ endpoints:
         bid_step:        "label='შეთავაზების ფასის კლების ბიჯი' (price-reduction step)"
         guarantee_amt:   "label='გარანტიის ოდენობა' (bid-guarantee amount)"
         guarantee_term:  "label='გარანტიის მოქმედების ვადა' (days)"
+      type_variant_fields:   # verified live 2026-06-01 — label set differs by tender TYPE; do NOT hardcode buyer/value labels
+        grant_donor: "GRA & DEP add: დონორი (donor), პროგრამის დასახელება (program), 'ლოტის დასახალება / N:' (lot), პროექტის ხანგრძლივობა (project duration)"
+        grant_buyer_label: "GRA replaces the buyer row 'შემსყიდველი' with 'ადმინისტრირებას უწევს' (administered by) — a buyer lookup keyed on 'შემსყიდველი' returns NOTHING for GRA. GRA also omits category/CPV, guarantee, bid-step"
+        pricelist: "price-list (პრეისკურანტი) tenders rename the value row to 'პრეისკურანტის სავარაუდო ღირებულება' and add 'შესყიდვის ობიექტის სახელშეკრულებო ღირებულება' — exact match on 'შესყიდვის სავარაუდო ღირებულება' misses the estimate"
+        b2b: "B2B omits the guarantee rows (shorter table); keeps შემსყიდველი, category, bid-step"
       footer: "ul.date -> li[0]=created (ჩაწერა: author :: DD.MM.YYYY HH:MM), li[1]=last modified (შესწორება: ...)"
       also: "Button #btn_appstatushistory fires action=app_statushistory (see that endpoint)"
     empty_state: n/a
@@ -204,6 +209,9 @@ endpoints:
         sectioned: [NAT, SPA, CON]
         flat: [GEO, DEP, MEP, DAP, TEP, CNT, GRA, B2B]
         era_caveat: "old tenders use flat even for NAT/SPA/CON (verified: SPA140022279 from 2014 = flat; recent SPA = sectioned). Detect layout STRUCTURALLY, never assume by type alone."
+        lifecycle_caveats:   # verified live 2026-06-01
+          CON: "Consolidated tenders were observed at statuses up to 130 (preparing contract) but NONE at 140 (signed) — they do not produce the standard signed-contract / agr_docs (5-tab) state. Their contract handling differs (likely per-participant contracts elsewhere); terminal/contract flow is UNEXPLORED."
+          PPP: "PPP type is defined in the search dropdown but currently returns 0 tenders — layout/structure never sampled (omit from layout assumptions)."
       qa_blocks: "sectioned: div.hst-blk id='hst-<chat_id>' per section; flat: div#chat with question blocks. Both expose .show_reply -> action=show_qa filling div#ANS<chat_id> (see show_qa)."
     empty_state: "sectioned: section#que150 absent/empty -> no estimate. flat: table#tender_docs absent -> 'დოკუმენტაცია მიმაგრებული არ არის'"
     error_state: "invalid app_id -> PHP 'Undefined offset: 0', not a 404"
@@ -304,6 +312,10 @@ endpoints:
         table renders with header + EMPTY body (no countdown, no rows); (2) intake open -> #TenderCountdown;
         (3) closed/awarded -> populated table. An empty bids table does NOT mean 'no bids' — check status.
         Bidder offer prices (first/last) are shown inline as numbers; per-bidder trail via [N] ნახვა -> view_bid.
+      type_variants:   # verified live 2026-06-01
+        donor_extra_table: "DEP (donor) tenders render an EXTRA simple table 'პრეტენდენტი | შეთავაზებული თანხა | თარიღი' (single offer, no auction rounds) BEFORE the standard table; parse tr[id^=B] standard table"
+        grant_header: "GRA (grant) uses bidder-column header 'განმცხადებელი' (applicant) instead of 'პრეტენდენტი' — don't match by that header text"
+        bidders_from_eval: "bidders are listed from selection/evaluation (app_status 40+), not only when awarded (verified: B2B at შერჩევა/შეფასება with 6 bidders)"
     empty_state: "bidding-phase shows live #TenderCountdown; pre-intake shows an empty bidders table (header only)"
     error_state: not_captured
     fixture: "data/discovery/app_bids_656756.html (awarded); app_bids_681326.html (bidding)"
@@ -323,9 +335,10 @@ endpoints:
       wrapper: "div#agency_docs (SAME wrapper id as agr_docs — distinguish by content)"
       table: "table#reports (class=ktable): cols [icon] | document (a -> files.php?mode=app&file=<id>&code=<code>) | თარიღი/ავტორი"
       row_id: "'<file_id>.<code>.<app_id>'; doctype<NN> + obsolete0/1 classes; file_lock<0|1>.png icon"
-      doctype_map:   # sampled live across 7 tenders 2018->2026 (only 3 values seen)
+      doctype_map:   # sampled live; values seen so far: 30/40/50/100 (OPEN-ENDED — do not treat as exhaustive)
         doctype30: "procedural/agency decisions: ინტერესთა კონფლიქტი, ოქმი (commission minutes), წერილი, შეტყობინება"
         doctype40: "single commission letter/protocol (usually 1 per tender)"
+        doctype50: "agency decision/closure protocols: შესყიდვის შეწყვეტის ოქმი (termination protocol on terminated tenders); also TEP/prequalification result protocols"
         doctype100: "contract-stage / contractor-submitted bundle: ხელშეკრულება (signed contract), the awarded ხარჯთაღრიცხვა/ფასების ცხრილი (cost estimate), გეგმა-გრაფიკი (schedule), გამოცდილება, პერსონალი, მინდობილობა, დანართი N1/N3/N5, drawings"
         caveat: "doctype is a coarse hint, NOT a cost-estimate selector — doctype100 mixes the price sheet with all other contractual files"
       cost_estimate: >
@@ -438,6 +451,13 @@ endpoints:
       wrapper: "div#tdocs_div (class ui-widget-content; title 'ტექნიკური დოკუმენტაცია')"
       table: "table#tdocs (class ktable): cols პრეტენდენტი (bidder) | ფაილი (file) | თარიღი (date)"
       file_anchor: "files.php?mode=tdoc&file=<id>&code=<code>  (NOTE: a THIRD files.php mode, alongside que/app)"
+      bid_pricing: >
+        PRIMARY BID-STAGE PRICING SOURCE (verified live 2026-06-01). Files are bidders' own priced
+        submissions, keyed by bidder: price-list (პრეისკურანტი) tenders put the bidder's unit-price
+        catalog here as a '... პრეისკურანტი .xlsx' (NOT in the bids table or view_bid, which show only
+        a single sum+date); works/MEP tenders put the bidder's ხარჯთაღრიცხვა-signed.pdf + წინადადება
+        .xlsx here. Bid-time analogue of the awarded cost estimate in agency_docs — same caveats
+        (filename/spelling unreliable) -> use content/AI classification, not a name match.
       note: "wiring: button #showtdocs in app_bids -> $.get(controller.php,{action:'app_tdocs',app_id}) -> #app_tdocs"
     empty_state: not_observed
     error_state: not_captured
