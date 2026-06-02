@@ -261,9 +261,12 @@ class ProcurementClient:
                     continue
                 tds = tr.find_all("td")
                 mode, fid, code = cls._file_parts(a.get("href", ""))
+                cell = a.find_parent("td")
+                cell_cls = (cell.get("class") or []) if cell else []
                 files.append(DocFile(
                     filename=a.get_text(" ", strip=True), href=a.get("href"),
                     mode=mode, file_id=fid, code=code,
+                    is_current="obsolete1" not in cell_cls,
                     date_author=tds[-1].get_text(" ", strip=True) if len(tds) >= 2 else None,
                 ))
             if files:
@@ -376,6 +379,10 @@ def _enrich_row(tr, row: TenderRow) -> None:
             row.nat_code = t.split(":")[-1].strip()
         elif "შემსყიდველი" in t:
             row.buyer = t.split(":")[-1].strip()
+        elif "შესყიდვის კატეგორია" in t:
+            row.category = t.split(":", 1)[-1].strip()
+        elif "შესყიდვის სავარაუდო ღირებულება" in t:
+            row.estimated_value = t.split(":", 1)[-1].strip()
     sp = tr.select_one("p.status")
     if sp:
         row.status_text = sp.get_text(" ", strip=True)

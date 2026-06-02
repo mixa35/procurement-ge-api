@@ -41,7 +41,7 @@ into structured data.
 ```bash
 pip install .
 # or, straight from GitHub:
-# pip install git+https://github.com/REPLACE_ME/procurement-ge-api.git
+# pip install git+https://github.com/mixa35/procurement-ge-api.git
 ```
 
 Then, from anywhere:

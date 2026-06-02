@@ -61,6 +61,12 @@ def test_search_parser_row_fields():
     # buyer — at least one row should have it
     buyers = [r.buyer for r in page.rows if r.buyer]
     assert len(buyers) > 0, "no rows had a buyer"
+    # category & estimated_value — the search HTML carries both; the model promises
+    # them, so _enrich_row must populate them (regression guard for the audit gap)
+    cats = [r.category for r in page.rows if r.category]
+    assert len(cats) > 0, "no rows had a category"
+    vals = [r.estimated_value for r in page.rows if r.estimated_value]
+    assert len(vals) > 0, "no rows had an estimated_value"
 
 
 # ---------------------------------------------------------------------------
@@ -355,6 +361,10 @@ def test_app_docs_flat_layout_legacy():
     assert all(f.section_id is None for f in d.files)
     # a cost-estimate xlsx is still discoverable in the flat list
     assert len(d.cost_estimate_files) >= 1
+    # flat layout respects currentness: the fixture has an obsolete1 row that must
+    # be flagged is_current=False (regression guard — it used to default to True)
+    assert any(not f.is_current for f in d.files), "obsolete1 file not flagged"
+    assert any(f.is_current for f in d.files)
 
 
 @pytest.mark.skipif(not fixture_exists("app_docs_687393_flat_b2b.html"), reason="fixture missing")

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "procurement-ge-api"
-version = "1.0.0"
+version = "1.0.1"
 description = "Reverse-engineered Python client + full documentation for the Georgian e-Procurement portal (tenders.procurement.gov.ge)."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -25,8 +25,8 @@ dependencies = [
 test = ["pytest>=7.0"]
 
 [project.urls]
-Documentation = "https://github.com/REPLACE_ME/procurement-ge-api/blob/main/docs/api_reference.md"
-Source = "https://github.com/REPLACE_ME/procurement-ge-api"
+Documentation = "https://github.com/mixa35/procurement-ge-api/blob/main/docs/api_reference.md"
+Source = "https://github.com/mixa35/procurement-ge-api"
 
 [tool.setuptools]
 # Ship only the importable client package. docs/, tests/, examples/, provenance/

@@ -463,7 +463,8 @@ answer (the question block in `app_docs` `#chat` is `Q type1`). Fixtures:
 
 - **`library/cpv/dialog2.php`** (POST `input_id`, `code_str`, optional `cpvlang=2` for English) —
   returns the CPV tree-picker dialog (`<div id="cpv_dialog">` + a dynatree `<div id="tree">`).
-  The tree lazy-loads child nodes from `library/cpv/lazy_node.php`. Fixture: `cpv_dialog2.html`.
+  The tree lazy-loads child nodes from `library/cpv/lazy_node.php`. Discovery capture:
+  `data/discovery/cpv_dialog2.html` (provenance only — not shipped in `tests/fixtures/`).
 - **`library/cpv/cpv_search.php`** (GET `q`, `limit`, `timestamp`) — the autocomplete backend for
   the CPV codes text field (pipe/newline rows `code|label`). **Confirmed empty 2026-05-29:** returns
   HTTP 200 / 0-byte body for every query, not only to curl but also when fetched from the live page
@@ -545,4 +546,4 @@ buyer / 1 for supplier**. To mirror the UI exactly, use those values.
 
 `stat<N>.png` icon numbers are **identical** to the `app_status` value (1:1): filtering search by
 `app_status=10` yields `stat10.png`, `20`→`stat20.png`, … `140`→`stat140.png`. No separate
-lookup table needed. Fixture: `stat_icon_mapping.txt`.
+lookup table needed. Discovery capture: `data/discovery/stat_icon_mapping.txt` (provenance only — not shipped in `tests/fixtures/`).

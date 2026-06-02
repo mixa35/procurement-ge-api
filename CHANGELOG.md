@@ -2,6 +2,26 @@
 
 All notable changes to this project are documented here.
 
+## [1.0.1] — 2026-06-02
+
+Bug fixes from an accuracy audit (parser/model gaps + packaging placeholders).
+
+### Fixed
+- **Search rows now populate `category` and `estimated_value`.** `TenderRow` promised
+  both and the search HTML carries them, but `_enrich_row()` only extracted NAT
+  code/buyer/status. Both fields are now parsed.
+- **Flat-layout docs respect currentness.** `_parse_docs` (flat) now sets
+  `DocFile.is_current` from the file cell's `obsolete0`/`obsolete1` class instead of
+  defaulting every flat file to `True` (matching the sectioned layout's behavior).
+- **Packaging URLs** in `pyproject.toml` and the README install command pointed at a
+  placeholder org (`REPLACE_ME`); corrected to `mixa35`.
+- **Docs:** `api_reference.md` no longer cites `cpv_dialog2.html` / `stat_icon_mapping.txt`
+  as shipped fixtures — they are `data/discovery/` provenance captures (not in `tests/fixtures/`).
+
+### Tests
+- Added regression assertions for search `category`/`estimated_value` and flat-layout
+  obsolete handling. 27 passing.
+
 ## [1.0.0] — 2026-05-30
 
 First packaged release. The public Procurement (შესყიდვები) surface of
