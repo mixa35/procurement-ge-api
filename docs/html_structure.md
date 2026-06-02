@@ -61,8 +61,9 @@ announced): a sectioned `app_docs` is a full structured questionnaire — §1.1 
 (დანართი N3 გამოცდილება, N4 ამხანაგობა, N6 გრაფიკი), §4.1.x price-adequacy rules, §7.1.1 advance
 terms, a **draft contract** (`ხელშეკრულების პროექტი.pdf`), §9.1 contact person, and **§11.1 the
 commission ოქმი** approving the conditions. So: files of real value live in sections *other than*
-1.3, and `ოქმი`/contract drafts appear here too — not only in Results. The client targets §1.3 for
-the estimate; widen the selector if you want the full buyer package.
+1.3, and `ოქმი`/contract drafts appear here too — not only in Results. `get_doc_files()` already
+returns the **full** buyer package across all sections in `DocsTab.files`; only the
+`cost_estimate_files` helper narrows to §1.3 (`que150`). Read `DocsTab.files` for everything.
 
 > The `"დოკუმენტაცია მიმაგრებული არ არის"` string also appears here as the empty-state of the
 > per-section **Q&A / clarification** blocks (`hst-blk`), even when documents *are* attached

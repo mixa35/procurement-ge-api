@@ -198,7 +198,8 @@ endpoints:
             templates (დანართი N3 გამოცდილება, N4 ამხანაგობა, N6 გრაფიკი), a draft contract
             (ხელშეკრულების პროექტი.pdf), and §11.1 the commission ოქმი approving conditions. So ოქმი /
             contract drafts are NOT exclusive to Results — they appear in app_docs too. get_doc_files
-            targets §1.3 only; widen the selector for the full buyer package.
+            ALREADY returns the full buyer package across all sections in DocsTab.files; only the
+            cost_estimate_files helper narrows to §1.3 (que150). Read DocsTab.files for everything.
           qa_empty_string: "'დოკუმენტაცია მიმაგრებული არ არის' is ALSO the per-section Q&A (hst-blk) empty-state — not proof the tab has no documents"
         flat:
           applies_to: "GEO, DEP, MEP, DAP, TEP, CNT, GRA, B2B — AND any old/legacy tender (e.g. 2014 SPA) regardless of type"
