@@ -6,14 +6,21 @@ from .errors import ParseError, PortalError, SessionExpiredError, TenderNotFound
 from .session import PortalSession, make_session
 from .client import ProcurementClient
 from .models import (
+    Bid,
     BidHistoryEntry,
+    BidsTab,
     Company,
+    Contract,
     DocFile,
     DocsTab,
     OrgProfile,
+    Payment,
+    QaMessage,
+    QaThread,
     SearchPage,
     StatusEvent,
     TechDoc,
+    TenderMain,
     TenderRow,
     TenderTabs,
 )
@@ -25,4 +32,6 @@ __all__ = [
     "Company", "TenderRow", "SearchPage", "TenderTabs",
     "OrgProfile", "StatusEvent", "TechDoc", "BidHistoryEntry",
     "DocFile", "DocsTab",
+    "TenderMain", "Bid", "BidsTab", "Contract", "Payment",
+    "QaThread", "QaMessage",
 ]

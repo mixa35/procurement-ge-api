@@ -11,14 +11,21 @@ from bs4 import BeautifulSoup
 
 from .errors import ParseError, PortalError
 from .models import (
+    Bid,
     BidHistoryEntry,
+    BidsTab,
     Company,
+    Contract,
     DocFile,
     DocsTab,
     OrgProfile,
+    Payment,
+    QaMessage,
+    QaThread,
     SearchPage,
     StatusEvent,
     TechDoc,
+    TenderMain,
     TenderRow,
     TenderTabs,
 )
@@ -188,6 +195,10 @@ class ProcurementClient:
     def get_main(self, app_id: int) -> str:
         return self.s.tab("app_main", app_id)
 
+    def get_main_info(self, app_id: int) -> TenderMain:
+        """action=app_main parsed into a TenderMain (full label map in .fields)."""
+        return self._parse_main(self.s.tab("app_main", app_id), app_id)
+
     def get_docs(self, app_id: int) -> str:
         return self.s.tab("app_docs", app_id)
 
@@ -205,11 +216,54 @@ class ProcurementClient:
     def get_bids(self, app_id: int) -> str:
         return self.s.tab("app_bids", app_id)
 
+    def get_bids_info(self, app_id: int) -> BidsTab:
+        """action=app_bids parsed: state ('open'/'listed'/'empty') + bidder rows.
+
+        Bid.bidder_id feeds get_bid_history(); Bid.org_id feeds get_profile().
+        """
+        return self._parse_bids(self.s.tab("app_bids", app_id), app_id)
+
     def get_results(self, app_id: int) -> str:
         return self.s.tab("agency_docs", app_id)
 
+    def get_result_files(self, app_id: int) -> list[DocFile]:
+        """action=agency_docs parsed: result-document rows from table#reports."""
+        return self._parse_result_files(self.s.tab("agency_docs", app_id))
+
     def get_contract(self, app_id: int) -> str:
         return self.s.tab("agr_docs", app_id)  # auto-primes
+
+    def get_contract_info(self, app_id: int) -> Contract:
+        """action=agr_docs parsed: contract summary + documents + payment history.
+
+        Only meaningful once a contract is signed (app_status=140) — the tab does
+        not exist before that (see get_tabs / TenderTabs.has_contract).
+        """
+        return self._parse_contract(self.s.tab("agr_docs", app_id), app_id)
+
+    def get_lastevents(self) -> list[TenderRow]:
+        """action=lastevents — homepage feed of the 5 most recent status changes."""
+        return self._parse_showapp_rows(self.s.get("lastevents"), "#lastevents")
+
+    def iter_search(self, max_rows: int | None = None, **filters):
+        """Generator over search results across pages (throttled, 4 rows/page).
+
+        Yields TenderRow until the result set is exhausted or max_rows is hit.
+        Mind the math: ~6 portal requests per 24 rows at 1.5s throttle.
+        """
+        page = self.search_tenders(**filters)
+        yielded = 0
+        while True:
+            for row in page.rows:
+                yield row
+                yielded += 1
+                if max_rows is not None and yielded >= max_rows:
+                    return
+            if (not page.rows or page.current_page is None
+                    or page.total_pages is None
+                    or page.current_page >= page.total_pages):
+                return
+            page = self.next_page()
 
     # --- endpoints added in the 2026-05-29 audit pass -------------------
 
@@ -260,9 +314,39 @@ class ProcurementClient:
         q = dict(re.findall(r"[?&](\w+)=([^&]*)", href or ""))
         return q.get("mode"), q.get("file"), q.get("code") or None
 
+    @staticmethod
+    def _collect_qa_threads(soup) -> list[QaThread]:
+        """Find Q&A thread ids in an app_docs response (both layouts).
+
+        Sectioned: div.hst-blk id='hst-<chat_id>' (one per section, no inline text).
+        Flat: div id='ANS<chat_id>' inside #chat, question text in sibling <p>s.
+        """
+        threads: list[QaThread] = []
+        for d in soup.select("div.hst-blk[id]"):
+            m = re.match(r"hst-(\d+)", d.get("id", ""))
+            if not m:
+                continue
+            sec = d.find_parent("section")
+            threads.append(QaThread(chat_id=int(m.group(1)),
+                                    section_id=sec.get("id") if sec else None))
+        for d in soup.select("div[id^='ANS']"):
+            m = re.match(r"ANS(\d+)", d.get("id", ""))
+            if not m:
+                continue
+            block = d.parent
+            author_p = block.select_one("p.author") if block else None
+            q_p = block.select_one("p.chatmessgase") if block else None
+            threads.append(QaThread(
+                chat_id=int(m.group(1)),
+                question_author=author_p.get_text(" ", strip=True) if author_p else None,
+                question=q_p.get_text(" ", strip=True) if q_p else None,
+            ))
+        return threads
+
     @classmethod
     def _parse_docs(cls, html: str, app_id: int) -> DocsTab:
         soup = BeautifulSoup(html, "lxml")
+        qa_threads = cls._collect_qa_threads(soup)
         sections = soup.select("section.question.level1")
         if sections:
             files: list[DocFile] = []
@@ -278,7 +362,8 @@ class ProcurementClient:
                         mode=mode, file_id=fid, code=code, section_id=sid,
                         is_current="obsolete0" in (div.get("class") or []),
                     ))
-            return DocsTab(app_id=app_id, layout="sectioned", files=files)
+            return DocsTab(app_id=app_id, layout="sectioned", files=files,
+                           qa_threads=qa_threads)
 
         # legacy flat layout: a table of attached files (id often 'tender_docs')
         table = soup.select_one("table#tender_docs") or soup.select_one("#app_docs table")
@@ -299,13 +384,234 @@ class ProcurementClient:
                     date_author=tds[-1].get_text(" ", strip=True) if len(tds) >= 2 else None,
                 ))
             if files:
-                return DocsTab(app_id=app_id, layout="flat", files=files)
+                return DocsTab(app_id=app_id, layout="flat", files=files,
+                               qa_threads=qa_threads)
         # no sections and no file table: only valid if the tab wrapper itself is
         # present (a genuinely empty docs tab); otherwise the markup has drifted
         if soup.select_one("#app_docs") is None:
             raise ParseError(f"app_docs for app_id={app_id} has neither sectioned "
                              "nor flat layout nor an #app_docs wrapper — markup drift?")
-        return DocsTab(app_id=app_id, layout="empty", files=[])
+        return DocsTab(app_id=app_id, layout="empty", files=[], qa_threads=qa_threads)
+
+    # --- core-tab parsers (added 2026-06-12 audit pass) ------------------
+
+    @staticmethod
+    def _parse_main(html: str, app_id: int) -> TenderMain:
+        soup = BeautifulSoup(html, "lxml")
+        if soup.select_one("#app_main") is None:
+            raise ParseError(f"app_main for app_id={app_id} has no #app_main wrapper "
+                             "— markup drift?")
+        tm = TenderMain(app_id=app_id)
+        table = (soup.select_one("#print_area table")
+                 or soup.select_one("#app_main table.with-label"))
+        if table is None:
+            raise ParseError(f"app_main for app_id={app_id} has no overview table "
+                             "— markup drift?")
+        for tr in table.select("tr"):
+            tds = tr.find_all("td", recursive=False)
+            if len(tds) == 2:
+                label = tds[0].get_text(" ", strip=True)
+                value = tds[1].get_text(" ", strip=True)
+                if not label:
+                    continue
+                tm.fields[label] = value
+                if label == "შესყიდვის ტიპი":
+                    tm.tender_type = value
+                elif label == "განცხადების ნომერი":
+                    strong = tds[1].select_one("strong")
+                    tm.nat_code = strong.get_text(strip=True) if strong else value
+                elif label == "შესყიდვის სტატუსი":
+                    tm.status_text = value
+                    icon = tds[1].select_one("img[src*='stat']")
+                    m = re.search(r"stat(\d+)\.png", icon.get("src", "")) if icon else None
+                    tm.status_code = int(m.group(1)) if m else None
+                elif label in ("შემსყიდველი", "ადმინისტრირებას უწევს"):  # GRA variant
+                    tm.buyer_name = value
+                    m = re.search(r"ShowProfile\((\d+)", str(tds[1]))
+                    tm.buyer_org_id = int(m.group(1)) if m else None
+                elif label == "შესყიდვის გამოცხადების თარიღი":
+                    tm.announce_date = value
+                elif label == "წინადადებების მიღება იწყება":
+                    tm.bids_open = value
+                elif label == "წინადადებების მიღება მთავრდება":
+                    tm.bid_deadline = value
+                elif "სავარაუდო ღირებულება" in label:  # incl. პრეისკურანტის… variant
+                    tm.estimated_value = value
+                elif label == "შესყიდვის კატეგორია":
+                    tm.category = value
+            elif len(tds) == 1 and tm.description is None:
+                bla = tds[0].select_one("div.blabla")
+                if bla:
+                    tm.description = bla.get_text(" ", strip=True)
+        return tm
+
+    @staticmethod
+    def _parse_bids(html: str, app_id: int) -> BidsTab:
+        soup = BeautifulSoup(html, "lxml")
+        if soup.select_one("#app_bids") is None:
+            raise ParseError(f"app_bids for app_id={app_id} has no #app_bids wrapper "
+                             "— markup drift?")
+        if soup.select_one("#TenderCountdown") is not None:
+            return BidsTab(app_id=app_id, state="open")
+        bids: list[Bid] = []
+        prefix = f"B{app_id}"
+        for tr in soup.select("#app_bids table.ktable tbody tr[id]"):
+            rid = tr.get("id", "")
+            if not rid.startswith("B"):
+                continue
+            # bidder_id: prefer ShowBidHistory(app_id, <id>); fallback: strip B<app_id>
+            m = re.search(r"ShowBidHistory\(\s*\d+\s*,\s*(\d+)", str(tr))
+            if m:
+                bidder_id = int(m.group(1))
+            elif rid.startswith(prefix) and rid[len(prefix):].isdigit():
+                bidder_id = int(rid[len(prefix):])
+            else:
+                bidder_id = None
+            tds = tr.find_all("td")
+            if len(tds) < 2:
+                continue
+            name_el = tr.select_one("span.color-1")
+            om = re.search(r"ShowProfile\((\d+)", str(tds[0]))
+            cm = re.search(r"\[(\d+)\]", tds[-1].get_text(" ", strip=True))
+
+            def _amount_time(td):
+                if td is None:
+                    return None, None
+                date = td.select_one("span.date")
+                t = date.get_text(strip=True) if date else None
+                amt = td.get_text(" ", strip=True)
+                if t:
+                    amt = amt.replace(t, "").strip()
+                return (amt or None), t
+
+            last_amount, last_time = _amount_time(tds[1] if len(tds) > 1 else None)
+            first_amount, first_time = _amount_time(tds[2] if len(tds) > 3 else None)
+            bids.append(Bid(
+                bidder_id=bidder_id,
+                bidder_name=name_el.get_text(strip=True) if name_el
+                            else tds[0].get_text(" ", strip=True) or None,
+                org_id=int(om.group(1)) if om else None,
+                last_amount=last_amount, last_time=last_time,
+                first_amount=first_amount, first_time=first_time,
+                bid_count=int(cm.group(1)) if cm else None,
+                is_winner=any("activebid1" in (td.get("class") or []) for td in tds),
+            ))
+        return BidsTab(app_id=app_id, state="listed" if bids else "empty", bids=bids)
+
+    @classmethod
+    def _parse_result_files(cls, html: str) -> list[DocFile]:
+        soup = BeautifulSoup(html, "lxml")
+        table = soup.select_one("table#reports")
+        if table is None:
+            raise ParseError("agency_docs has no table#reports — markup drift?")
+        files: list[DocFile] = []
+        for tr in table.select("tbody tr[id]"):
+            a = tr.select_one("a[href*='files.php']")
+            if not a:
+                continue
+            tds = tr.find_all("td")
+            mode, fid, code = cls._file_parts(a.get("href", ""))
+            cell = a.find_parent("td")
+            cell_cls = (cell.get("class") or []) if cell else []
+            files.append(DocFile(
+                filename=a.get_text(" ", strip=True), href=a.get("href"),
+                mode=mode, file_id=fid, code=code,
+                is_current="obsolete1" not in cell_cls,
+                date_author=tds[-1].get_text(" ", strip=True) if len(tds) >= 2 else None,
+            ))
+        return files
+
+    @classmethod
+    def _parse_contract(cls, html: str, app_id: int) -> Contract:
+        soup = BeautifulSoup(html, "lxml")
+        wrap = soup.select_one("#agency_docs")  # agr_docs shares this wrapper id
+        if wrap is None:
+            raise ParseError(f"agr_docs for app_id={app_id} has no #agency_docs "
+                             "wrapper — markup drift?")
+        c = Contract(app_id=app_id)
+        divs = wrap.find_all("div", recursive=False)
+        if not divs:
+            raise ParseError(f"agr_docs for app_id={app_id} has no content blocks "
+                             "— markup drift?")
+
+        # DIV 0 — contract summary card
+        summary = divs[0]
+        status = summary.select_one("span.agrfg10")
+        c.status_text = status.get_text(strip=True) if status else None
+        strong = summary.select_one("td strong")
+        c.supplier_name = strong.get_text(strip=True) if strong else None
+        m = re.search(r"ShowProfile\((\d+)", str(summary))
+        c.supplier_org_id = int(m.group(1)) if m else None
+        conv = summary.select_one("span.convertme")
+        if conv:
+            # id format: "<amount>-<currency>-<DD.MM.YYYY HH:MM>"
+            parts = (conv.get("id") or "").split("-", 2)
+            try:
+                c.amount_value = float(parts[0])
+            except (ValueError, IndexError):
+                pass
+            c.currency = parts[1] if len(parts) > 1 else None
+        stext = summary.get_text(" ", strip=True)
+        m = re.search(r"ნომერი/თანხა:\s*(.+?)\s*/", stext)
+        c.number_raw = m.group(1).strip() if m else None
+        m = re.search(r"ხელშეკრულება ძალაშია:\s*(\d{2}\.\d{2}\.\d{4})\s*-\s*(\d{2}\.\d{2}\.\d{4})", stext)
+        if m:
+            c.valid_from, c.valid_to = m.group(1), m.group(2)
+        m = re.search(r"ხელშეკრულების თარიღი:\s*(\d{2}\.\d{2}\.\d{4})", stext)
+        c.contract_date = m.group(1) if m else None
+        a = summary.select_one("a[href*='mode=contract']")
+        if a:
+            _, c.contract_file_id, _ = cls._file_parts(a.get("href", ""))
+
+        # documents list (table#last_docs)
+        for tr in wrap.select("table#last_docs tr"):
+            a = tr.select_one("a[href*='files.php']")
+            if not a:
+                continue
+            tds = tr.find_all("td")
+            mode, fid, code = cls._file_parts(a.get("href", ""))
+            c.files.append(DocFile(
+                filename=a.get_text(" ", strip=True), href=a.get("href"),
+                mode=mode, file_id=fid, code=code,
+                date_author=tds[-1].get_text(" ", strip=True) if len(tds) >= 2 else None,
+            ))
+
+        # payments block — the div carrying 'ფაქტობრივი გადახდები'
+        pay_div = next((d for d in reversed(divs)
+                        if "ფაქტობრივი გადახდები" in d.get_text()), None)
+        if pay_div is not None:
+            ptext = pay_div.get_text(" ", strip=True)
+            m = re.search(r"ხელშეკრულების თანხა:\s*([\d`., ]+\S*)", ptext)
+            c.contract_value_total = m.group(1).strip() if m else None
+            m = re.search(r"გადახდილი თანხა:\s*([\d`., ]+\S*)\s*\((\d+)%\)", ptext)
+            if m:
+                c.paid_total, c.paid_pct = m.group(1).strip(), int(m.group(2))
+            table = pay_div.find("table")
+            for tr in (table.find_all("tr") if table else []):
+                tds = tr.find_all("td")
+                cells = [t.get_text(" ", strip=True) for t in tds]
+                if len(cells) < 5 or cells[0] == "თანხა" or "ჩანაწერები არ არის" in cells[0]:
+                    continue
+                c.payments.append(Payment(
+                    amount=cells[0], year=cells[1], quarter=cells[2],
+                    pay_date=cells[3], date_author=cells[4],
+                ))
+        return c
+
+    @staticmethod
+    def parse_qa(html: str) -> list[QaMessage]:
+        """Parse a show_qa thread into messages; [] when 'პასუხები არ არის'."""
+        if "პასუხები არ არის" in html:
+            return []
+        soup = BeautifulSoup(html, "lxml")
+        out: list[QaMessage] = []
+        for author_p in soup.select("p.author"):
+            msg_p = author_p.find_next_sibling("p", class_="chatmessgase")
+            out.append(QaMessage(
+                author=author_p.get_text(" ", strip=True),
+                message=msg_p.get_text(" ", strip=True) if msg_p else None,
+            ))
+        return out
 
     # --- parsers for the above -----------------------------------------
 
