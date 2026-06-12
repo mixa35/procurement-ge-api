@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "procurement-ge-api"
-version = "1.0.1"
+version = "1.1.0"
 description = "Reverse-engineered Python client + full documentation for the Georgian e-Procurement portal (tenders.procurement.gov.ge)."
 readme = "README.md"
 requires-python = ">=3.10"

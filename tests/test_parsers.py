@@ -31,15 +31,10 @@ def soup(filename: str) -> BeautifulSoup:
     return BeautifulSoup((DISC / filename).read_text(encoding="utf-8"), "lxml")
 
 
-def fixture_exists(filename: str) -> bool:
-    return (DISC / filename).exists()
-
-
 # ---------------------------------------------------------------------------
 # search results parser
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("search_app_default_p1.html"), reason="fixture missing")
 def test_search_parser_returns_rows():
     html = (DISC / "search_app_default_p1.html").read_text(encoding="utf-8")
     page = ProcurementClient._parse_search(html)
@@ -49,7 +44,6 @@ def test_search_parser_returns_rows():
     assert len(page.rows) > 0
 
 
-@pytest.mark.skipif(not fixture_exists("search_app_default_p1.html"), reason="fixture missing")
 def test_search_parser_row_fields():
     html = (DISC / "search_app_default_p1.html").read_text(encoding="utf-8")
     page = ProcurementClient._parse_search(html)
@@ -73,7 +67,6 @@ def test_search_parser_row_fields():
 # app_bids — awarded state (has bidder table)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("app_bids_656756.html"), reason="fixture missing")
 def test_app_bids_awarded_has_bidder_table():
     s = soup("app_bids_656756.html")
     assert s.select_one("#app_bids") is not None
@@ -83,7 +76,6 @@ def test_app_bids_awarded_has_bidder_table():
     assert len(rows) >= 1, "expected at least one bidder row"
 
 
-@pytest.mark.skipif(not fixture_exists("app_bids_656756.html"), reason="fixture missing")
 def test_app_bids_awarded_row_structure():
     s = soup("app_bids_656756.html")
     row = s.select_one("#app_bids table.ktable tbody tr[id]")
@@ -106,7 +98,6 @@ def test_app_bids_awarded_row_structure():
 # app_bids — bidding phase (live countdown, no bidder table)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("app_bids_681326.html"), reason="fixture missing")
 def test_app_bids_bidding_phase_has_countdown():
     s = soup("app_bids_681326.html")
     assert s.select_one("#app_bids") is not None
@@ -121,7 +112,6 @@ def test_app_bids_bidding_phase_has_countdown():
 # agency_docs — results tab
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("agency_docs_656756.html"), reason="fixture missing")
 def test_agency_docs_awarded_has_file_rows():
     s = soup("agency_docs_656756.html")
     assert s.select_one("#agency_docs") is not None
@@ -139,7 +129,6 @@ def test_agency_docs_awarded_has_file_rows():
         assert "mode=app" in href, f"expected mode=app in href: {href!r}"
 
 
-@pytest.mark.skipif(not fixture_exists("agency_docs_681326.html"), reason="fixture missing")
 def test_agency_docs_empty_state():
     s = soup("agency_docs_681326.html")
     assert s.select_one("#agency_docs") is not None
@@ -152,7 +141,6 @@ def test_agency_docs_empty_state():
 # app_main — tender overview
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("app_main_656756.html"), reason="fixture missing")
 def test_app_main_key_fields():
     s = soup("app_main_656756.html")
     assert s.select_one("#app_main") is not None
@@ -166,7 +154,6 @@ def test_app_main_key_fields():
     assert nat.startswith(("NAT", "B2B", "SPA", "CON")), f"unexpected NAT code: {nat!r}"
 
 
-@pytest.mark.skipif(not fixture_exists("app_main_656756.html"), reason="fixture missing")
 def test_app_main_buyer_has_show_profile():
     s = soup("app_main_656756.html")
     # Buyer link has ShowProfile(org_id) in onclick
@@ -182,14 +169,12 @@ def test_app_main_buyer_has_show_profile():
 # lastevents feed
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("lastevents.html"), reason="fixture missing")
 def test_lastevents_has_five_rows():
     s = soup("lastevents.html")
     rows = s.select("table#lastevents tbody tr")
     assert len(rows) == 5, f"expected 5 lastevents rows, got {len(rows)}"
 
 
-@pytest.mark.skipif(not fixture_exists("lastevents.html"), reason="fixture missing")
 def test_lastevents_row_structure():
     s = soup("lastevents.html")
     rows = s.select("table#lastevents tbody tr")
@@ -218,7 +203,6 @@ def _read(fn: str) -> str:
     return (DISC / fn).read_text(encoding="utf-8")
 
 
-@pytest.mark.skipif(not fixture_exists("profile_buyer.html"), reason="fixture missing")
 def test_profile_buyer_fields():
     prof = ProcurementClient._parse_profile(_read("profile_buyer.html"), 42485)
     assert prof.role == "შემსყიდველი"
@@ -228,7 +212,6 @@ def test_profile_buyer_fields():
     assert prof.email and "@" in prof.email
 
 
-@pytest.mark.skipif(not fixture_exists("profile_supplier.html"), reason="fixture missing")
 def test_profile_supplier_role():
     prof = ProcurementClient._parse_profile(_read("profile_supplier.html"), 32327)
     assert prof.role == "მიმწოდებელი"
@@ -239,7 +222,6 @@ def test_profile_supplier_role():
 # app_statushistory (action=app_statushistory)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("app_statushistory_656756.html"), reason="fixture missing")
 def test_status_history_rows():
     events = ProcurementClient._parse_status_history(_read("app_statushistory_656756.html"))
     assert len(events) >= 2
@@ -255,7 +237,6 @@ def test_status_history_rows():
 # app_tdocs (action=app_tdocs)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("app_tdocs_656756.html"), reason="fixture missing")
 def test_tech_docs_rows_use_tdoc_mode():
     docs = ProcurementClient._parse_tech_docs(_read("app_tdocs_656756.html"))
     assert len(docs) >= 1
@@ -268,7 +249,6 @@ def test_tech_docs_rows_use_tdoc_mode():
 # view_bid (action=view_bid)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("view_bid_656756_759455.html"), reason="fixture missing")
 def test_bid_history_amount_parses():
     entries = ProcurementClient._parse_bid_history(_read("view_bid_656756_759455.html"))
     assert len(entries) >= 1
@@ -280,7 +260,6 @@ def test_bid_history_amount_parses():
 # today_bids (action=today_bids)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("today_bids.html"), reason="fixture missing")
 def test_today_bids_rows():
     rows = ProcurementClient._parse_showapp_rows(_read("today_bids.html"), "#today_bids")
     assert len(rows) > 5, "today_bids should be a full list, not capped at 5"
@@ -314,7 +293,6 @@ def test_permalink():
 # show_qa (action=show_qa) — clarification Q&A thread
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("show_qa_656756_23295158.html"), reason="fixture missing")
 def test_show_qa_empty_state():
     html = _read("show_qa_656756_23295158.html")
     assert ProcurementClient.qa_is_empty(html) is True
@@ -325,7 +303,6 @@ def test_show_qa_empty_detector_negative():
     assert ProcurementClient.qa_is_empty("<p>ვ. გიორგაძე: პასუხი აქ</p>") is False
 
 
-@pytest.mark.skipif(not fixture_exists("show_qa_125688_25710.html"), reason="fixture missing")
 def test_show_qa_populated_thread():
     html = _read("show_qa_125688_25710.html")
     assert ProcurementClient.qa_is_empty(html) is False
@@ -339,7 +316,6 @@ def test_show_qa_populated_thread():
 # app_docs — TWO layouts (sectioned modern vs flat legacy/non-NAT-SPA-CON)
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skipif(not fixture_exists("app_docs_612033_sectioned.html"), reason="fixture missing")
 def test_app_docs_sectioned_layout():
     d = ProcurementClient._parse_docs(_read("app_docs_612033_sectioned.html"), 612033)
     assert d.layout == "sectioned"
@@ -351,7 +327,6 @@ def test_app_docs_sectioned_layout():
     assert len(d.cost_estimate_files) >= 1
 
 
-@pytest.mark.skipif(not fixture_exists("app_docs_125688_flat.html"), reason="fixture missing")
 def test_app_docs_flat_layout_legacy():
     d = ProcurementClient._parse_docs(_read("app_docs_125688_flat.html"), 125688)
     assert d.layout == "flat"
@@ -367,7 +342,6 @@ def test_app_docs_flat_layout_legacy():
     assert any(f.is_current for f in d.files)
 
 
-@pytest.mark.skipif(not fixture_exists("app_docs_687393_flat_b2b.html"), reason="fixture missing")
 def test_app_docs_flat_layout_b2b_cost_estimate():
     d = ProcurementClient._parse_docs(_read("app_docs_687393_flat_b2b.html"), 687393)
     assert d.layout == "flat"
