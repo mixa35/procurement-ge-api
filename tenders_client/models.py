@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
+
+from .parsing import parse_amount, parse_date
 
 
 @dataclass
@@ -21,6 +24,10 @@ class TenderRow:
     category: str | None = None
     estimated_value: str | None = None
     raw_text: str | None = None
+
+    @property
+    def estimated_value_amount(self) -> float | None:
+        return parse_amount(self.estimated_value)
 
 
 @dataclass
@@ -62,12 +69,23 @@ class OrgProfile:
     def is_buyer(self) -> bool:
         return self.role == "შემსყიდველი"
 
+    @property
+    def reg_code(self) -> str | None:
+        """NAPR registration code (საიდენტიფიკაციო კოდი) — the STABLE join key for
+        cross-referencing other datasets (the official OCDS export keys orgs as
+        GE-NAPR-<reg_code>; the portal's internal org_id exists nowhere else)."""
+        return self.id_code
+
 
 @dataclass
 class StatusEvent:
     """One row of action=app_statushistory (newest first)."""
     timestamp: str   # DD.MM.YYYY HH:MM
     status: str
+
+    @property
+    def timestamp_dt(self) -> datetime | None:
+        return parse_date(self.timestamp)
 
 
 @dataclass
@@ -145,6 +163,18 @@ class TenderMain:
     def permalink(self) -> str:
         return f"https://tenders.procurement.gov.ge/public/?go={self.app_id}&lang=ge"
 
+    @property
+    def estimated_value_amount(self) -> float | None:
+        return parse_amount(self.estimated_value)
+
+    @property
+    def bid_deadline_dt(self) -> datetime | None:
+        return parse_date(self.bid_deadline)
+
+    @property
+    def announce_date_dt(self) -> datetime | None:
+        return parse_date(self.announce_date)
+
 
 @dataclass
 class Bid:
@@ -158,6 +188,10 @@ class Bid:
     first_time: str | None = None
     bid_count: int | None = None
     is_winner: bool = False      # activebid1 cells
+
+    @property
+    def last_amount_value(self) -> float | None:
+        return parse_amount(self.last_amount)
 
 
 @dataclass
@@ -182,6 +216,14 @@ class Payment:
     quarter: str | None = None
     pay_date: str | None = None  # გადახდის თარიღი DD.MM.YYYY
     date_author: str | None = None
+
+    @property
+    def amount_value(self) -> float | None:
+        return parse_amount(self.amount)
+
+    @property
+    def pay_date_dt(self) -> datetime | None:
+        return parse_date(self.pay_date)
 
 
 @dataclass

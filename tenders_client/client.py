@@ -88,6 +88,11 @@ class ProcurementClient:
             key = aliases.get(k, k)
             if key not in SEARCH_DEFAULTS:
                 raise KeyError(f"unknown search param: {k!r}")
+            if key in ("app_date_from", "app_date_tlll") and str(v):
+                # the portal silently ignores malformed dates — fail loud instead
+                if not re.fullmatch(r"\d{2}\.\d{2}\.\d{4}", str(v)):
+                    raise ValueError(
+                        f"{k}={v!r}: portal dates must be DD.MM.YYYY (e.g. 05.12.2025)")
             body[key] = str(v)
         page = self._parse_search(self.s.post_search(body))
         self._searched = True
