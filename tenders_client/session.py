@@ -194,6 +194,12 @@ class PortalSession:
             m = (_re.search(r"filename\*=(?:UTF-8'')?([^;]+)", cd)
                  or _re.search(r'filename="?([^";]+)"?', cd))
             filename = unquote(m.group(1).strip()) if m else str(file_id)
+            try:
+                # the portal sends raw UTF-8 bytes in a plain filename= header,
+                # which the HTTP layer decodes as latin-1 — undo that mojibake
+                filename = filename.encode("latin-1").decode("utf-8")
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                pass
         dest = pathlib.Path(dest_dir) / filename
         dest.parent.mkdir(parents=True, exist_ok=True)
         with open(dest, "wb") as fh:
