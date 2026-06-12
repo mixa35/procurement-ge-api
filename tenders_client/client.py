@@ -9,6 +9,7 @@ import re
 
 from bs4 import BeautifulSoup
 
+from .errors import ParseError, PortalError
 from .models import (
     BidHistoryEntry,
     Company,
@@ -38,8 +39,16 @@ _PAGE_RE = re.compile(r"(\d+)\s*ჩანაწერი.*?გვერდი:\s
 
 
 class ProcurementClient:
+    """One client = one portal session = ONE active server-side search result set.
+
+    Pagination (next_page/goto_page) walks state held in the portal's PHP session,
+    so interleaving two searches on one client corrupts paging — use one client per
+    concurrent search. Do not share a client across threads.
+    """
+
     def __init__(self, session: PortalSession | None = None):
         self.s = session or make_session()
+        self._searched = False
 
     # --- company lookup -------------------------------------------------
 
@@ -73,7 +82,9 @@ class ProcurementClient:
             if key not in SEARCH_DEFAULTS:
                 raise KeyError(f"unknown search param: {k!r}")
             body[key] = str(v)
-        return self._parse_search(self.s.post_search(body))
+        page = self._parse_search(self.s.post_search(body))
+        self._searched = True
+        return page
 
     _cpv_cat_cache: dict | None = None
 
@@ -116,10 +127,19 @@ class ProcurementClient:
         return self.search_tenders(app_basecode=bid, **filters)
 
     def next_page(self) -> SearchPage:
+        self._require_search()
         return self._parse_search(self.s.page("next"))
 
     def goto_page(self, n: int) -> SearchPage:
+        self._require_search()
         return self._parse_search(self.s.page(n))
+
+    def _require_search(self) -> None:
+        if not getattr(self, "_searched", False):
+            raise PortalError(
+                "no active search on this client — pagination walks server-side "
+                "session state, so call search_tenders() first"
+            )
 
     @staticmethod
     def _parse_search(html: str) -> SearchPage:
@@ -131,6 +151,11 @@ class ProcurementClient:
             page.current_page = int(m.group(2))
             page.total_pages = int(m.group(3))
         table = soup.select_one("#list_apps_by_subject")
+        if table is None and m is None:
+            # an empty result set still renders the table + indicator, so neither
+            # being present means the markup is not what we know how to read
+            raise ParseError("search response has no #list_apps_by_subject table "
+                             "and no page indicator — markup drift?")
         if table:
             for tr in table.select("tbody tr[id]"):
                 rid = tr.get("id", "")
@@ -149,8 +174,12 @@ class ProcurementClient:
 
     def get_tabs(self, app_id: int) -> TenderTabs:
         html = self.s.open_tender(app_id)
+        soup = BeautifulSoup(html, "lxml")
+        if soup.select_one("#application_tabs") is None:
+            raise ParseError(f"action=application for app_id={app_id} has no "
+                             "#application_tabs strip — markup drift?")
         actions = []
-        for a in BeautifulSoup(html, "lxml").select("#application_tabs a[href*='action=']"):
+        for a in soup.select("#application_tabs a[href*='action=']"):
             mm = re.search(r"action=(\w+)", a.get("href", ""))
             if mm and mm.group(1) in DETAIL_ACTIONS and mm.group(1) not in actions:
                 actions.append(mm.group(1))
@@ -271,6 +300,11 @@ class ProcurementClient:
                 ))
             if files:
                 return DocsTab(app_id=app_id, layout="flat", files=files)
+        # no sections and no file table: only valid if the tab wrapper itself is
+        # present (a genuinely empty docs tab); otherwise the markup has drifted
+        if soup.select_one("#app_docs") is None:
+            raise ParseError(f"app_docs for app_id={app_id} has neither sectioned "
+                             "nor flat layout nor an #app_docs wrapper — markup drift?")
         return DocsTab(app_id=app_id, layout="empty", files=[])
 
     # --- parsers for the above -----------------------------------------
@@ -278,6 +312,9 @@ class ProcurementClient:
     @staticmethod
     def _parse_profile(html: str, org_id: int) -> OrgProfile:
         soup = BeautifulSoup(html, "lxml")
+        if soup.select_one("#profile_dialog") is None and soup.select_one("table.with-label") is None:
+            raise ParseError(f"profile for org_id={org_id} has no #profile_dialog "
+                             "or table.with-label — markup drift?")
         prof = OrgProfile(org_id=org_id)
         label_map = {
             "საიდენტიფიკაციო კოდი": "id_code", "ქვეყანა": "country",
@@ -303,6 +340,9 @@ class ProcurementClient:
     @staticmethod
     def _parse_status_history(html: str) -> list[StatusEvent]:
         soup = BeautifulSoup(html, "lxml")
+        if soup.select_one("#z") is None and soup.select_one("table.with-free-label-history") is None:
+            raise ParseError("app_statushistory has no #z wrapper or "
+                             "table.with-free-label-history — markup drift?")
         out: list[StatusEvent] = []
         for tr in soup.select("#z table tbody tr, table.with-free-label-history tbody tr"):
             tds = tr.find_all("td")
@@ -316,6 +356,8 @@ class ProcurementClient:
     @staticmethod
     def _parse_tech_docs(html: str) -> list[TechDoc]:
         soup = BeautifulSoup(html, "lxml")
+        if soup.select_one("table#tdocs") is None:
+            raise ParseError("app_tdocs has no table#tdocs — markup drift?")
         out: list[TechDoc] = []
         for tr in soup.select("table#tdocs tbody tr"):
             tds = tr.find_all("td")
@@ -334,6 +376,8 @@ class ProcurementClient:
     @staticmethod
     def _parse_bid_history(html: str) -> list[BidHistoryEntry]:
         soup = BeautifulSoup(html, "lxml")
+        if soup.find("table") is None:
+            raise ParseError("view_bid response has no table — markup drift?")
         out: list[BidHistoryEntry] = []
         for tr in soup.select("table tbody tr"):
             if "ui-widget-header" in (tr.get("class") or []):
@@ -352,7 +396,9 @@ class ProcurementClient:
         (today_bids, lastevents). Row markup matches the search results body."""
         soup = BeautifulSoup(html, "lxml")
         out: list[TenderRow] = []
-        scope = soup.select_one(table_selector) or soup
+        scope = soup.select_one(table_selector)
+        if scope is None:
+            raise ParseError(f"response has no {table_selector!r} table — markup drift?")
         for tr in scope.select("tr[onclick]"):
             m = re.search(r"ShowApp\((\d+)", tr.get("onclick", ""))
             if not m:
