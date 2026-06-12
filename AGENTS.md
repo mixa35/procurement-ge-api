@@ -25,10 +25,17 @@ fuzzy *exploration* layer (edges tagged INFERRED/AMBIGUOUS). The YAML is canonic
 
 - **Throttle.** Every portal request waits 1.5s (`THROTTLE_S`). Never bypass it.
 - **Session.** `ProcurementClient()` GETs `/?lang=ge` to set the `SPALITE` cookie.
-  A stale cookie → PHP `Undefined index: lang` (line 8). Re-init the client to fix.
-- **Encoding** is UTF-8; thousands separator is a backtick (`7`500.00`).
+  Errors are exceptions now: stale session → auto re-init once, then
+  `SessionExpiredError`; bad app_id → `TenderNotFoundError`; markup drift →
+  `ParseError` (see `tenders_client/errors.py`).
+- **lang=ge ONLY.** `lang=en` exists and returns English fragments — every parser
+  keys on Georgian labels and the session verifies the Georgian UI at init.
+- **Encoding** is UTF-8; thousands separator is a backtick (`7`500.00`); parse
+  values with `tenders_client.parsing.parse_amount/parse_date`, don't regex ad hoc.
 - **Scope:** only the Procurement (შესყიდვები) surface. CMR/CON/SMP/ePLAN/MRS are
   **out of scope** (entry-point map only in the catalog).
+- **Historical bulk data (≤ 2019-06):** don't scrape it — the official OCDS API has
+  it (frozen 2019-06-25, see `docs/ocds_mapping.md`). Current data: portal only.
 - **Never** commit `.env`, `data/`, or live-scraped HTML (see `.gitignore`).
 
 ## Intent → action cheatsheet
@@ -40,10 +47,15 @@ fuzzy *exploration* layer (edges tagged INFERRED/AMBIGUOUS). The YAML is canonic
 | "winner announced / გამარჯვებული გამოვლენილია" | `app_status=50` | One status only. "Announced"=10, "contract being prepared"=130, "contract signed"=140. Full enum → `search_filters.md`. |
 | Filter by amount | `app_amount_from=`, `app_amount_to=` | Currency defaults to GEL (`app_currency=2`). |
 | Filter by a date | `app_date_type=<N>` + `app_date_from`/`app_date_tlll` | `app_date_type` picks WHICH date (e.g. 3 = status date). Dates are `DD.MM.YYYY`. |
-| Open a tender | `client.get_tabs(app_id)` then `get_main/get_doc_files/get_bids/get_results/get_contract` | Tabs are **state-dependent**: contract tab (`agr_docs`) exists only at `app_status=140`. |
-| Company profile | `client.get_profile(org_id)` | Works for buyer or supplier orgs. |
+| Open a tender (parsed) | `client.get_tabs(app_id)` then `get_main_info/get_doc_files/get_bids_info/get_result_files/get_contract_info` | Tabs are **state-dependent**: contract tab (`agr_docs`) exists only at `app_status=140`. Raw-HTML variants (`get_main/get_bids/...`) still exist. |
+| Iterate many results | `client.iter_search(max_rows=N, **filters)` | Generator across pages; ~6 requests per 24 rows at 1.5s throttle. |
+| Winner / bid amounts | `client.get_bids_info(app_id).winner` | `Bid.bidder_id` feeds `get_bid_history`; `Bid.org_id` feeds `get_profile`. |
+| Contract + payments | `client.get_contract_info(app_id)` | `Contract.paid_pct`, `payments[].amount_value`, contract file id. |
+| Q&A clarifications | `client.get_doc_files(app_id).qa_threads` → `client.parse_qa(client.get_qa(app_id, chat_id))` | chat ids come from app_docs (both layouts). |
+| Company profile | `client.get_profile(org_id)` | Works for buyer or supplier orgs. `OrgProfile.reg_code` = NAPR join key. |
 | Status timeline | `client.get_status_history(app_id)` | Finer-grained than the search-filter status enum. |
-| Build a file download URL | `client.s.file_url(file_id, code, mode)` | Parse `mode/file/code` from the anchor href; `mode=contract` omits `code`. |
+| Latest status changes | `client.get_lastevents()` | Homepage feed, 5 rows. |
+| Download a file | `client.s.download(file_id, code, mode, dest_dir)` | Throttled; filename from Content-Disposition. `mode=contract` omits `code`. |
 | Permalink to a tender | `PortalSession.permalink(app_id)` | `…/?go=<id>&lang=ge`. |
 
 ## The mistake to never repeat

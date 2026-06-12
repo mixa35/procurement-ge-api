@@ -44,6 +44,34 @@ project uses a conservative 1.5-second inter-request delay (configurable via `TH
 env var). Bot-detection behavior at faster rates is unknown — do not reduce below 1.0s
 without testing.
 
+**robots.txt (recorded 2026-06-12):** the portal serves `User-agent: * / Disallow: /` —
+it formally disallows all automated crawling. controller.php does not enforce this
+technically; it is recorded here so the operator makes an informed decision. Keep the
+throttle regardless.
+
+## Language — lang=ge is REQUIRED by this project
+
+The session language is server-side state set by the `?lang=<ge|en>` homepage GET.
+**`lang=en` exists and returns fully English fragments** (verified live 2026-06-12 —
+e.g. app_main renders "Procurement proceeding status", search rows "Announcment number:
+NAT…"). Every selector, label and empty-state string documented here — and every parser
+in `tenders_client/` — keys on the **Georgian** labels, so an `en`-initialized session
+makes label-driven parsing silently return nothing. `PortalSession` initializes with
+`?lang=ge` and verifies a Georgian marker is present, raising `SessionExpiredError`
+otherwise. If you ever need the English vocabulary, treat it as a separate documentation
+effort, not a drop-in.
+
+## Error signatures → client exceptions
+
+The portal returns HTTP 200 + a PHP notice for application-level failures. The client
+maps them (see `tenders_client/errors.py`):
+
+| Live body signature | Meaning | Client behavior |
+|---|---|---|
+| `[8] Undefined index: lang … controller.php - Line:8` | session lost its lang state | re-init `/?lang=ge` once, retry; then `SessionExpiredError` |
+| `[8] Undefined offset: 0 … controller.php - Line:140/196/390` | bad `app_id` (line varies by tab) | `TenderNotFoundError` |
+| expected wrapper missing (e.g. `#app_main`, `table#reports`) | markup drift / unknown shape | `ParseError` (never a silent empty result) |
+
 ## Tender detail tab structure
 
 A full tender loads via:

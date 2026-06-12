@@ -28,6 +28,19 @@ meta:
     cookie: SPALITE
     acquire: GET https://tenders.procurement.gov.ge/public/?lang=ge
     note: Reuse the SPALITE cookie on all controller.php calls. Missing cookie -> PHP error.
+  language:
+    supported: ge
+    note: >-
+      lang=en EXISTS and returns fully English fragments (verified live 2026-06-12:
+      'Procurement proceeding status', 'Announcment number: NAT...'). Everything in
+      this catalog and every parser in tenders_client/ keys on the GEORGIAN labels —
+      always initialize the session with ?lang=ge. PortalSession verifies this.
+  robots_txt:
+    value: "User-agent: * / Disallow: /"
+    note: >-
+      The portal formally disallows all crawling (verified 2026-06-12). Not enforced
+      technically by controller.php; recorded so operators make an informed decision.
+      Keep the 1.5s throttle regardless.
   encoding: utf-8
   thousands_separator: "`"   # backtick, e.g. 7`500.00 ლარი
   throttle_seconds: 1.5
@@ -600,6 +613,9 @@ out_of_scope_modules:
   qep_mrs:
     entry: "qep/qep_controller.php?action=search_qep&search= -> #app_list (btn_mrs / Market Research)"
     detail_controller: "library/qep/qep_controller.php?action=application&app_id="
+  fb_auth:
+    entry: "library/fblogin.php / library/fblogout.php (referenced by homepage + spa.js)"
+    note: "Facebook-login auth surface (found 2026-06-12 gap-hunt). Authenticated functionality — out of scope; listed so the public-surface map stays provably complete."
   note: "CMR/CON/SMP/ePLAN/MRS/Market Research are explicitly out of scope for this project (see README.md / AGENTS.md)."
 
 # --- TENDER DETAIL TAB MODEL (confirmed 2026-05-28) ---
