@@ -1,5 +1,10 @@
 # Procurement GE API
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![tests](https://github.com/mixa35/procurement-ge-api/actions/workflows/tests.yml/badge.svg)](https://github.com/mixa35/procurement-ge-api/actions/workflows/tests.yml)
+[![Portal verified](https://img.shields.io/badge/portal%20verified-2026--06--12-informational.svg)](docs/api_reference.md)
+
 A complete, reverse-engineered **API layer + documentation** for the Georgian
 e-Procurement portal — **[tenders.procurement.gov.ge](https://tenders.procurement.gov.ge/public/?lang=ge)**.
 
@@ -32,7 +37,7 @@ those fragments into structured data.
 | **[docs/ocds_mapping.md](docs/ocds_mapping.md)** | The official OCDS open-data API (frozen 2019-06-25): field mapping, what only this project has, when to use which. |
 | **[tenders_client/](tenders_client/)** | The Python client (session + parsers + dataclasses). |
 | **[examples/](examples/)** | Runnable scripts (start here). |
-| **[tests/](tests/)** | 27 fixture-backed parser tests — green on a fresh clone. |
+| **[tests/](tests/)** | 60 fixture-backed tests (27 of them parser tests) — no live portal calls, run in CI on Python 3.10–3.13. |
 | **[provenance/discovery/](provenance/discovery/)** | The scripts used to discover & re-verify the endpoints (how the docs were derived). |
 | **[AGENTS.md](AGENTS.md)** | Entry point for AI agents (Claude Code etc.) — read this first if you're an LLM. |
 
@@ -148,10 +153,17 @@ Full filter/enum reference: **[docs/search_filters.md](docs/search_filters.md)**
 
 ## License
 
-**Proprietary — all rights reserved.** This is *not* open source. See
-[LICENSE](LICENSE). To obtain a license to use this work, contact
-**mishogongadze7@gmail.com**.
+**[MIT](LICENSE).** Use it, fork it, build on it.
+
+Two requests that the license does not enforce but that matter:
+
+1. **Keep the client throttled.** The portal is a public service run by a state
+   agency and has no rate limiting of its own. The 1.5s default exists for a
+   reason — please don't lower it for bulk work.
+2. **Check `docs/ocds_mapping.md` first if you need history.** Bulk historical
+   analysis belongs on the official OCDS open data, not on this client.
 
 This repo documents only the **public** pages of the portal — no credentials, no
 authenticated endpoints. The underlying procurement data is published by the
-State Procurement Agency of Georgia under its own terms.
+State Procurement Agency of Georgia under its own terms; the MIT license covers
+this repository's code and documentation, not that data.
