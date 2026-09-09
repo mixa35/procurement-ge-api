@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-27%20fixture--backed-brightgreen.svg)](tests/)
+[![tests](https://github.com/mixa35/procurement-ge-api/actions/workflows/tests.yml/badge.svg)](https://github.com/mixa35/procurement-ge-api/actions/workflows/tests.yml)
 [![Portal verified](https://img.shields.io/badge/portal%20verified-2026--06--12-informational.svg)](docs/api_reference.md)
 
 A complete, reverse-engineered **API layer + documentation** for the Georgian
@@ -37,7 +37,7 @@ those fragments into structured data.
 | **[docs/ocds_mapping.md](docs/ocds_mapping.md)** | The official OCDS open-data API (frozen 2019-06-25): field mapping, what only this project has, when to use which. |
 | **[tenders_client/](tenders_client/)** | The Python client (session + parsers + dataclasses). |
 | **[examples/](examples/)** | Runnable scripts (start here). |
-| **[tests/](tests/)** | 27 fixture-backed parser tests — green on a fresh clone. |
+| **[tests/](tests/)** | 60 fixture-backed tests (27 of them parser tests) — no live portal calls, run in CI on Python 3.10–3.13. |
 | **[provenance/discovery/](provenance/discovery/)** | The scripts used to discover & re-verify the endpoints (how the docs were derived). |
 | **[AGENTS.md](AGENTS.md)** | Entry point for AI agents (Claude Code etc.) — read this first if you're an LLM. |
 
